@@ -1,95 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom'
-import {
-  LayoutDashboard, Package, Boxes, ShoppingCart, Truck, ClipboardCheck,
-  Warehouse, Users, FileBarChart, Settings, Bell, ListTodo, ChevronLeft, ChevronRight,
-  Shield, ArrowLeftRight, AlertTriangle, Recycle, ScanLine,
-  PackageCheck, PackageOpen, RotateCcw, UserRound, Store, Layers,
-} from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { QkTooltip } from '../ui'
-import type { LucideIcon } from 'lucide-react'
-
-interface NavItem {
-  label: string
-  to: string
-  icon: LucideIcon
-}
-
-interface NavSection {
-  title: string
-  items: NavItem[]
-}
-
-const sections: NavSection[] = [
-  {
-    title: 'Overview',
-    items: [{ label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard }],
-  },
-  {
-    title: 'Procurement',
-    items: [
-      { label: 'Purchase Orders', to: '/purchase-orders', icon: ShoppingCart },
-      { label: 'Approvals', to: '/approvals', icon: ClipboardCheck },
-      { label: 'Approval History', to: '/approval-history', icon: ListTodo },
-      { label: 'Zoho Sync', to: '/zoho-sync', icon: ArrowLeftRight },
-      { label: 'Vendors', to: '/vendors', icon: Store },
-    ],
-  },
-  {
-    title: 'Warehouse',
-    items: [
-      { label: 'Warehouses', to: '/warehouses', icon: Warehouse },
-      { label: 'Receiving', to: '/receiving', icon: PackageOpen },
-      { label: 'GRN', to: '/grn', icon: ClipboardCheck },
-      { label: 'QC', to: '/qc', icon: ScanLine },
-      { label: 'Put-Away', to: '/put-away', icon: PackageCheck },
-    ],
-  },
-  {
-    title: 'Inventory',
-    items: [
-      { label: 'Inv. Dashboard', to: '/inventory-dashboard', icon: LayoutDashboard },
-      { label: 'Inventory', to: '/inventory', icon: Package },
-      { label: 'Warehouse Stock', to: '/warehouse-inventory', icon: Warehouse },
-      { label: 'Batches', to: '/batches', icon: Layers },
-      { label: 'Expiry', to: '/expiry', icon: AlertTriangle },
-      { label: 'Audits', to: '/audits', icon: ClipboardCheck },
-      { label: 'Wastage', to: '/wastage', icon: Recycle },
-      { label: 'Stock Movement', to: '/stock-movement', icon: ArrowLeftRight },
-    ],
-  },
-  {
-    title: 'Orders',
-    items: [
-      { label: 'Customers', to: '/customers', icon: Users },
-      { label: 'Sales Orders', to: '/sales-orders', icon: ShoppingCart },
-      { label: 'Reservations', to: '/reservations', icon: Boxes },
-      { label: 'Picklists', to: '/picklists', icon: ListTodo },
-      { label: 'My Picking', to: '/my-picking', icon: ScanLine },
-      { label: 'Picking', to: '/picking', icon: ScanLine },
-      { label: 'Dispatch', to: '/dispatch', icon: Truck },
-      { label: 'Returns', to: '/returns', icon: RotateCcw },
-    ],
-  },
-  {
-    title: 'Operations',
-    items: [
-      { label: 'Tasks', to: '/tasks', icon: ListTodo },
-      { label: 'Notifications', to: '/notifications', icon: Bell },
-    ],
-  },
-  {
-    title: 'Analytics',
-    items: [{ label: 'Reports', to: '/reports', icon: FileBarChart }],
-  },
-  {
-    title: 'Admin',
-    items: [
-      { label: 'Users', to: '/users', icon: UserRound },
-      { label: 'Roles', to: '/roles', icon: Shield },
-      { label: 'Settings', to: '/settings', icon: Settings },
-    ],
-  },
-]
+import { NAV_SECTIONS, isNavActive } from './navConfig'
 
 interface SidebarProps {
   collapsed: boolean
@@ -101,6 +13,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
   return (
     <aside
+      className="qk-sidebar"
       style={{
         width: collapsed ? 'var(--qk-sidebar-collapsed)' : 'var(--qk-sidebar-w)',
         minWidth: collapsed ? 'var(--qk-sidebar-collapsed)' : 'var(--qk-sidebar-w)',
@@ -184,14 +97,14 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           padding: collapsed ? '8px 0' : '10px 8px',
         }}
       >
-        {sections.map((section, sectionIdx) => (
+        {NAV_SECTIONS.map((section, sectionIdx) => (
           <div
             key={section.title}
             style={{
               marginBottom: collapsed ? 6 : 12,
-              paddingBottom: collapsed && sectionIdx < sections.length - 1 ? 6 : 0,
+              paddingBottom: collapsed && sectionIdx < NAV_SECTIONS.length - 1 ? 6 : 0,
               borderBottom:
-                collapsed && sectionIdx < sections.length - 1 ? '1px solid var(--qk-border)' : 'none',
+                collapsed && sectionIdx < NAV_SECTIONS.length - 1 ? '1px solid var(--qk-border)' : 'none',
               marginLeft: collapsed ? 10 : 0,
               marginRight: collapsed ? 10 : 0,
             }}
@@ -220,7 +133,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             >
               {section.items.map((item) => {
                 const Icon = item.icon
-                const active = location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)
+                const active = isNavActive(location.pathname, item.to)
                 const link = (
                   <NavLink
                     to={item.to}

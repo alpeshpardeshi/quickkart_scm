@@ -28,8 +28,8 @@ export function QkStepper({ steps, current, onStepClick }: QkStepperProps) {
           <>
             <span
               style={{
-                width: 22,
-                height: 22,
+                width: 28,
+                height: 28,
                 borderRadius: '50%',
                 display: 'grid',
                 placeItems: 'center',
@@ -69,7 +69,8 @@ export function QkStepper({ steps, current, onStepClick }: QkStepperProps) {
                   alignItems: 'center',
                   gap: 8,
                   margin: 0,
-                  padding: '4px 2px',
+                  padding: '8px 4px',
+                  minHeight: 44,
                   border: 'none',
                   background: 'transparent',
                   cursor: 'pointer',

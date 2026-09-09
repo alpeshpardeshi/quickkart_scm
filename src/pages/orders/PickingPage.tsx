@@ -1,19 +1,22 @@
 import { useMemo, useState } from 'react'
-import { PageHeader } from '../../components/layout/PageHeader'
-import { QkBarcodeScanner, QkButton, QkInput, QkMetric, QkSelect, QkStatusBadge } from '../../components/ui'
+import { PageHeader, QkStickyActions } from '../../components/layout/PageHeader'
+import { QkBarcodeScanner, QkButton, QkInput, QkSelect, QkStatusBadge } from '../../components/ui'
 import { useData } from '../../context/DataContext'
 import { useToast } from '../../context/ToastContext'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { formatDate, formatNumber, statusTone } from '../../utils'
 
 export function PickingPage() {
   const { picklists, setPicklists, salesOrders, setSalesOrders, batches } = useData()
   const { pushToast } = useToast()
+  const { isMobile } = useBreakpoint()
   const active = useMemo(() => picklists.filter((p) => p.status === 'Open' || p.status === 'In Progress'), [picklists])
   const [picklistId, setPicklistId] = useState(active[0]?.id || '')
   const picklist = picklists.find((p) => p.id === picklistId) || active[0]
   const so = salesOrders.find((s) => s.soNumber === picklist?.soNumber)
   const line = so?.items[0]
   const batch = batches.find((b) => b.sku === line?.sku && b.status !== 'Expired') || batches[0]
+  const location = [batch?.warehouse, 'A-03', '02', '14'].filter(Boolean).join('-') || 'A-03-02-14'
 
   const [picked, setPicked] = useState(String(line?.pickedQty || 0))
   const [barcode, setBarcode] = useState('')
@@ -64,9 +67,9 @@ export function PickingPage() {
   }
 
   return (
-    <div className="qk-page qk-animate-in">
+    <div className={`qk-page qk-animate-in${isMobile ? ' qk-floor-page' : ''}`}>
       <PageHeader title="Picking" subtitle="Scan, verify batch, and confirm picks." />
-      <div style={{ maxWidth: 320 }}>
+      <div style={{ maxWidth: isMobile ? '100%' : 320 }}>
         <QkSelect
           label="My picking task"
           value={picklist?.id || ''}
@@ -83,39 +86,70 @@ export function PickingPage() {
       {!picklist || !line ? (
         <div className="qk-surface" style={{ padding: 24 }}>No open picking tasks.</div>
       ) : (
-        <>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div className="qk-floor-card">
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <strong>{picklist.picklistNo}</strong>
             <QkStatusBadge label={picklist.status} tone={statusTone(picklist.status)} />
-            <span className="qk-secondary" style={{ fontSize: 12 }}>Order {picklist.soNumber} · {picklist.warehouse}</span>
           </div>
 
-          <div className="qk-grid-metrics">
-            <QkMetric label="Required" value={formatNumber(required)} />
-            <QkMetric label="Picked" value={formatNumber(pickedNum)} />
-            <QkMetric label="Remaining" value={formatNumber(Math.max(0, required - pickedNum))} />
+          <div className="qk-floor-card__block">
+            <div className="qk-floor-card__label">Order</div>
+            <div className="qk-floor-card__value" style={{ fontSize: 18 }}>{picklist.soNumber}</div>
           </div>
 
-          <div className="qk-grid-2">
-            <section className="qk-surface" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <h3 className="qk-section-title">{line.product}</h3>
-              <div style={{ fontSize: 13 }}><span className="qk-secondary">SKU</span> · <strong>{line.sku}</strong></div>
-              <div style={{ fontSize: 13 }}><span className="qk-secondary">Batch</span> · <strong>{batch?.batchNo || '—'}</strong></div>
-              <div style={{ fontSize: 13 }}><span className="qk-secondary">Expiry</span> · <strong>{formatDate(batch?.expiry)}</strong></div>
-              <QkInput label="Picked qty" type="number" value={picked} onChange={(e) => setPicked(e.target.value)} />
-            </section>
-            <section className="qk-surface" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <h3 className="qk-section-title">Barcode verification</h3>
-              <QkBarcodeScanner
-                value={barcode}
-                onChange={setBarcode}
-                onScan={handleScan}
-                placeholder={line.sku}
-              />
-              <QkButton loading={saving} onClick={confirm}>Confirm pick</QkButton>
-            </section>
+          <div className="qk-floor-card__block">
+            <div className="qk-floor-card__label">Location / Bin</div>
+            <div className="qk-floor-card__value qk-floor-card__value--lg">{location}</div>
           </div>
-        </>
+
+          <div className="qk-floor-card__block">
+            <div className="qk-floor-card__label">Product</div>
+            <div className="qk-floor-card__value" style={{ fontSize: 20 }}>{line.product}</div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="qk-floor-card__block">
+              <div className="qk-floor-card__label">SKU</div>
+              <div style={{ fontWeight: 650, fontSize: 15 }}>{line.sku}</div>
+            </div>
+            <div className="qk-floor-card__block">
+              <div className="qk-floor-card__label">Batch</div>
+              <div style={{ fontWeight: 650, fontSize: 15 }}>{batch?.batchNo || '—'}</div>
+            </div>
+          </div>
+
+          <div style={{ fontSize: 13, color: 'var(--qk-text-secondary)' }}>
+            Expiry · {formatDate(batch?.expiry)} · {picklist.warehouse}
+          </div>
+
+          <div className="qk-floor-card__block">
+            <div className="qk-floor-card__label">Quantity</div>
+            <div style={{ display: 'flex', gap: 16, alignItems: 'baseline', flexWrap: 'wrap' }}>
+              <span className="qk-floor-card__value qk-floor-card__value--lg">{formatNumber(required)}</span>
+              <span className="qk-secondary">Required</span>
+              <span style={{ fontWeight: 650 }}>{formatNumber(pickedNum)} picked</span>
+              <span className="qk-secondary">{formatNumber(Math.max(0, required - pickedNum))} left</span>
+            </div>
+          </div>
+
+          <QkInput label="Picked qty" type="number" value={picked} onChange={(e) => setPicked(e.target.value)} />
+
+          <QkBarcodeScanner
+            value={barcode}
+            onChange={setBarcode}
+            onScan={handleScan}
+            placeholder={line.sku}
+          />
+
+          <QkStickyActions>
+            <QkButton variant="outline" onClick={() => barcode && handleScan(barcode)} style={{ flex: 1 }}>
+              Scan
+            </QkButton>
+            <QkButton loading={saving} onClick={confirm} style={{ flex: 1.4 }}>
+              Confirm Pick
+            </QkButton>
+          </QkStickyActions>
+        </div>
       )}
     </div>
   )

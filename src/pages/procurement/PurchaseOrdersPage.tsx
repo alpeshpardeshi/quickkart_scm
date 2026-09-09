@@ -42,18 +42,20 @@ export function PurchaseOrdersPage() {
       key: 'poNumber',
       header: 'PO Number',
       sortable: true,
+      mobile: 'title',
       render: (r) => (
         <Link to={`/purchase-orders/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>
           {r.poNumber}
         </Link>
       ),
     },
-    { key: 'vendor', header: 'Vendor', sortable: true },
-    { key: 'warehouse', header: 'Warehouse', sortable: true },
+    { key: 'vendor', header: 'Vendor', sortable: true, mobile: 'subtitle' },
+    { key: 'warehouse', header: 'Warehouse', sortable: true, mobile: 'meta' },
     {
       key: 'status',
       header: 'Status',
       sortable: true,
+      mobile: 'status',
       render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} />,
     },
     {
@@ -61,13 +63,15 @@ export function PurchaseOrdersPage() {
       header: 'Amount',
       align: 'right',
       sortable: true,
+      mobile: 'field',
       render: (r) => formatCurrency(r.amount),
     },
-    { key: 'itemCount', header: 'Items', align: 'right', sortable: true },
+    { key: 'itemCount', header: 'Items', align: 'right', sortable: true, mobile: 'field' },
     {
       key: 'expectedDelivery',
       header: 'Expected',
       sortable: true,
+      mobile: 'meta',
       render: (r) => formatDate(r.expectedDelivery),
     },
     {
@@ -168,6 +172,7 @@ export function PurchaseOrdersPage() {
       />
 
       <QkTable
+        mobileMode="cards"
         columns={columns}
         rows={list.rows as unknown as PurchaseOrder[]}
         loading={list.loading}

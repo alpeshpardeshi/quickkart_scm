@@ -54,15 +54,15 @@ export function PutAwayPage() {
   }
 
   const columns: QkColumn<PutAwayTask>[] = [
-    { key: 'sku', header: 'SKU', sortable: true, render: (r) => <Link to={`/put-away/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.sku}</Link> },
-    { key: 'product', header: 'Product', sortable: true },
+    { key: 'sku', header: 'SKU', sortable: true, mobile: 'title', render: (r) => <Link to={`/put-away/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.sku}</Link> },
+    { key: 'product', header: 'Product', sortable: true, mobile: 'subtitle' },
     { key: 'batch', header: 'Batch' },
-    { key: 'quantity', header: 'Qty', align: 'right', render: (r) => formatNumber(r.quantity) },
+    { key: 'quantity', header: 'Qty', align: 'right', mobile: 'field', render: (r) => formatNumber(r.quantity) },
     { key: 'currentLocation', header: 'Current' },
-    { key: 'suggestedLocation', header: 'Suggested' },
-    { key: 'warehouse', header: 'Warehouse' },
-    { key: 'assignedTo', header: 'Assigned' },
-    { key: 'status', header: 'Status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
+    { key: 'suggestedLocation', header: 'Suggested', mobile: 'meta' },
+    { key: 'warehouse', header: 'Warehouse', mobile: 'meta' },
+    { key: 'assignedTo', header: 'Assigned', mobile: 'field' },
+    { key: 'status', header: 'Status', mobile: 'status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
   ]
 
   return (
@@ -84,6 +84,7 @@ export function PutAwayPage() {
         onClearAll={() => { setStatus(''); list.setSearch('') }}
       />
       <QkTable
+        mobileMode="cards"
         columns={columns}
         rows={list.rows as unknown as PutAwayTask[]}
         sortKey={list.sortKey}

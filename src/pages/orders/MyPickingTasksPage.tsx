@@ -16,13 +16,13 @@ export function MyPickingTasksPage() {
   )
 
   const columns: QkColumn<Picklist>[] = [
-    { key: 'picklistNo', header: 'Picklist', render: (r) => <Link to={`/picklists/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.picklistNo}</Link> },
-    { key: 'soNumber', header: 'SO' },
-    { key: 'warehouse', header: 'Warehouse' },
-    { key: 'items', header: 'Items', align: 'right' },
-    { key: 'picked', header: 'Picked', align: 'right' },
-    { key: 'priority', header: 'Priority', render: (r) => <QkStatusBadge label={r.priority} tone={statusTone(r.priority)} /> },
-    { key: 'status', header: 'Status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
+    { key: 'picklistNo', header: 'Picklist', mobile: 'title', render: (r) => <Link to={`/picklists/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.picklistNo}</Link> },
+    { key: 'soNumber', header: 'SO', mobile: 'subtitle' },
+    { key: 'warehouse', header: 'Warehouse', mobile: 'meta' },
+    { key: 'items', header: 'Items', align: 'right', mobile: 'field' },
+    { key: 'picked', header: 'Picked', align: 'right', mobile: 'field' },
+    { key: 'priority', header: 'Priority', mobile: 'meta', render: (r) => <QkStatusBadge label={r.priority} tone={statusTone(r.priority)} /> },
+    { key: 'status', header: 'Status', mobile: 'status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
     { key: 'createdAt', header: 'Created', render: (r) => formatDateTime(r.createdAt) },
   ]
 
@@ -38,7 +38,7 @@ export function MyPickingTasksPage() {
         <QkMetric label="In progress" value={mine.filter((p) => p.status === 'In Progress').length} />
         <QkMetric label="Lines remaining" value={mine.reduce((s, p) => s + Math.max(0, p.items - p.picked), 0)} />
       </div>
-      <QkTable columns={columns} rows={mine} emptyTitle="No picking tasks assigned to you." />
+      <QkTable mobileMode="cards" columns={columns} rows={mine} emptyTitle="No picking tasks assigned to you." />
     </div>
   )
 }

@@ -97,19 +97,19 @@ export function ReturnsPage() {
   }
 
   const columns: QkColumn<ReturnRecord>[] = [
-    { key: 'returnNo', header: 'Return', sortable: true, render: (r) => <Link to={`/returns/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.returnNo}</Link> },
-    { key: 'soNumber', header: 'SO', render: (r) => (
+    { key: 'returnNo', header: 'Return', sortable: true, mobile: 'title', render: (r) => <Link to={`/returns/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.returnNo}</Link> },
+    { key: 'soNumber', header: 'SO', mobile: 'meta', render: (r) => (
       r.soId
         ? <Link to={`/sales-orders/${r.soId}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.soNumber}</Link>
         : r.soNumber
     ) },
-    { key: 'customer', header: 'Customer', sortable: true },
+    { key: 'customer', header: 'Customer', sortable: true, mobile: 'subtitle' },
     { key: 'sku', header: 'SKU' },
-    { key: 'product', header: 'Product' },
+    { key: 'product', header: 'Product', mobile: 'field' },
     { key: 'batch', header: 'Batch' },
-    { key: 'returnedQty', header: 'Returned', align: 'right', render: (r) => formatNumber(r.returnedQty) },
-    { key: 'qcResult', header: 'QC', render: (r) => <QkStatusBadge label={r.qcResult} tone={statusTone(r.qcResult)} /> },
-    { key: 'status', header: 'Status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
+    { key: 'returnedQty', header: 'Returned', align: 'right', mobile: 'field', render: (r) => formatNumber(r.returnedQty) },
+    { key: 'qcResult', header: 'QC', mobile: 'meta', render: (r) => <QkStatusBadge label={r.qcResult} tone={statusTone(r.qcResult)} /> },
+    { key: 'status', header: 'Status', mobile: 'status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
     { key: 'createdAt', header: 'Created', render: (r) => formatDate(r.createdAt) },
   ]
 
@@ -132,6 +132,7 @@ export function ReturnsPage() {
         onClearAll={() => { setStatus(''); list.setSearch('') }}
       />
       <QkTable
+        mobileMode="cards"
         columns={columns}
         rows={list.rows as unknown as ReturnRecord[]}
         sortKey={list.sortKey}

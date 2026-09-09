@@ -74,14 +74,14 @@ export function TasksPage() {
   }
 
   const columns: QkColumn<Task>[] = [
-    { key: 'title', header: 'Task', sortable: true, render: (r) => <strong>{r.title}</strong> },
-    { key: 'type', header: 'Type' },
-    { key: 'warehouse', header: 'Warehouse' },
+    { key: 'title', header: 'Task', sortable: true, mobile: 'title', render: (r) => <strong>{r.title}</strong> },
+    { key: 'type', header: 'Type', mobile: 'meta' },
+    { key: 'warehouse', header: 'Warehouse', mobile: 'field' },
     { key: 'location', header: 'Location' },
-    { key: 'priority', header: 'Priority', render: (r) => <QkStatusBadge label={r.priority} tone={statusTone(r.priority)} /> },
-    { key: 'status', header: 'Status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
-    { key: 'due', header: 'Due', sortable: true, render: (r) => formatDate(r.due) },
-    { key: 'assignedTo', header: 'Assigned to', sortable: true },
+    { key: 'priority', header: 'Priority', mobile: 'meta', render: (r) => <QkStatusBadge label={r.priority} tone={statusTone(r.priority)} /> },
+    { key: 'status', header: 'Status', mobile: 'status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
+    { key: 'due', header: 'Due', sortable: true, mobile: 'field', render: (r) => formatDate(r.due) },
+    { key: 'assignedTo', header: 'Assigned to', sortable: true, mobile: 'subtitle' },
   ]
 
   const chips = [
@@ -116,7 +116,7 @@ export function TasksPage() {
         onRemoveChip={(id) => { if (id === 'status') setStatus(''); if (id === 'mine') setMine(false) }}
         onClearAll={() => { setStatus(''); setMine(false); list.setSearch('') }}
       />
-      <QkTable columns={columns} rows={list.rows as unknown as Task[]} sortKey={list.sortKey} sortDir={list.sortDir} onSort={list.onSort} page={list.page} pageCount={list.pageCount} total={list.total} pageSize={list.pageSize} onPageChange={list.setPage} onRowClick={setSelected} emptyTitle="No tasks matched your filters." />
+      <QkTable mobileMode="cards" columns={columns} rows={list.rows as unknown as Task[]} sortKey={list.sortKey} sortDir={list.sortDir} onSort={list.onSort} page={list.page} pageCount={list.pageCount} total={list.total} pageSize={list.pageSize} onPageChange={list.setPage} onRowClick={setSelected} emptyTitle="No tasks matched your filters." />
 
       <QkDrawer open={open} onClose={() => setOpen(false)} title="Create task" footer={<><QkButton variant="outline" onClick={() => setOpen(false)}>Cancel</QkButton><QkButton onClick={create}>Create</QkButton></>}>
         <form onSubmit={create} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

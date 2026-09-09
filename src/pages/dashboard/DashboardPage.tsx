@@ -73,6 +73,16 @@ export function DashboardPage() {
       <PageHeader
         title="Dashboard"
         subtitle="Operational command center across orders, inventory, warehouse activity and procurement."
+        primaryAction={(
+          <QkButton
+            variant="outline"
+            leftIcon={<RefreshCw size={14} />}
+            onClick={() => setTick((t) => t + 1)}
+            aria-label="Refresh"
+          >
+            Refresh
+          </QkButton>
+        )}
         actions={(
           <>
             <div
@@ -100,7 +110,8 @@ export function DashboardPage() {
         )}
       />
 
-      <div className="qk-dash-kpi-strip">
+      <div className="qk-dash-mobile-order">
+      <div data-dash-priority="2" className="qk-dash-kpi-strip">
         <DashboardKpi label="Orders Today" value={data.kpis.ordersToday.value} hint={data.kpis.ordersToday.hint} icon={ShoppingCart} to={data.kpis.ordersToday.to} delay={40} />
         <DashboardKpi label="Orders Requiring Action" value={data.kpis.ordersAction.value} hint={data.kpis.ordersAction.hint} icon={AlertTriangle} to={data.kpis.ordersAction.to} delay={80} />
         <DashboardKpi label="Available Inventory" value={data.kpis.available.value} hint={data.kpis.available.hint} icon={Package} to={data.kpis.available.to} delay={120} />
@@ -109,15 +120,21 @@ export function DashboardPage() {
         <DashboardKpi label="Dispatch Ready" value={data.kpis.dispatchReady.value} hint={data.kpis.dispatchReady.hint} icon={Truck} to={data.kpis.dispatchReady.to} delay={240} />
       </div>
 
+      <div data-dash-priority="3">
       <DashSection title="Order fulfillment pipeline" delay={100} action={<Link to="/sales-orders" style={linkStyle}>Sales orders</Link>}>
-        <OrderPipeline stages={data.pipeline} />
+        <div className="qk-dash-pipeline-scroll">
+          <OrderPipeline stages={data.pipeline} />
+        </div>
       </DashSection>
+      </div>
 
+      <div data-dash-priority="1">
       <DashSection title="Attention required" delay={140}>
         <ExceptionCenter items={data.exceptions} layout="grid" />
       </DashSection>
+      </div>
 
-      <div className="qk-dash-split">
+      <div data-dash-priority="5" className="qk-dash-split">
         <DashSection title="Warehouse workload" delay={160} action={<Link to="/tasks" style={linkStyle}>Tasks</Link>}>
           <WarehouseWorkload items={data.warehouseWorkload} />
         </DashSection>
@@ -126,6 +143,7 @@ export function DashboardPage() {
         </DashSection>
       </div>
 
+      <div data-dash-priority="4">
       <DashSection title="Inventory health" delay={220} action={<Link to="/inventory" style={linkStyle}>Inventory</Link>}>
         <div className="qk-dash-inv-layout">
           <InventoryHealth {...data.inventoryHealth} />
@@ -162,7 +180,9 @@ export function DashboardPage() {
           </div>
         </div>
       </DashSection>
+      </div>
 
+      <div data-dash-priority="4">
       <DashSection title="Inventory attention" delay={260} action={<Link to="/expiry" style={linkStyle}>Expiry</Link>}>
         {data.inventoryAttention.length === 0 ? (
           <div style={{ fontSize: 13, color: 'var(--qk-text-muted)' }}>No inventory risks flagged.</div>
@@ -186,7 +206,9 @@ export function DashboardPage() {
           </div>
         )}
       </DashSection>
+      </div>
 
+      <div data-dash-priority="6">
       <DashSection title="Inbound · procurement" delay={300} action={<Link to="/purchase-orders" style={linkStyle}>Purchase orders</Link>}>
         <div className="qk-dash-mini-metrics" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
           {[
@@ -217,7 +239,9 @@ export function DashboardPage() {
           ))}
         </div>
       </DashSection>
+      </div>
 
+      <div data-dash-priority="7">
       <DashSection title="Outbound · fulfillment" delay={320} action={<Link to="/dispatch" style={linkStyle}>Dispatch</Link>}>
         <div className="qk-dash-mini-metrics" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
           {[
@@ -249,9 +273,37 @@ export function DashboardPage() {
           ))}
         </div>
       </DashSection>
+      </div>
 
+      <div data-dash-priority="8">
       <DashSection title="Recent order activity" delay={340} action={<Link to="/sales-orders" style={linkStyle}>View all</Link>}>
-        <div style={{ overflowX: 'auto' }}>
+        <div className="qk-dash-recent-cards">
+          {data.recentOrders.map((so) => (
+            <div key={so.id} className="qk-ops-card">
+              <div className="qk-ops-card__head">
+                <div>
+                  <div className="qk-ops-card__title">{so.soNumber}</div>
+                  <div className="qk-ops-card__subtitle">{so.customer}</div>
+                </div>
+                <QkStatusBadge label={so.status} tone={statusTone(so.status)} />
+              </div>
+              <div className="qk-ops-card__meta">
+                <div className="qk-ops-card__meta-item">
+                  <span className="qk-ops-card__meta-label">Items</span>
+                  <span className="qk-ops-card__meta-value">{so.itemCount}</span>
+                </div>
+                <div className="qk-ops-card__meta-item">
+                  <span className="qk-ops-card__meta-label">Delivery</span>
+                  <span className="qk-ops-card__meta-value">{formatDate(so.deliveryDate)}</span>
+                </div>
+              </div>
+              <div className="qk-ops-card__actions">
+                <Link to={`/sales-orders/${so.id}`} className="qk-dash-open-btn" style={{ textAlign: 'center', height: 40, display: 'grid', placeItems: 'center', flex: 1 }}>Workspace</Link>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="qk-dash-recent-table" style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5, tableLayout: 'fixed' }}>
             <thead>
               <tr style={{ color: 'var(--qk-text-secondary)', textAlign: 'left' }}>
@@ -284,6 +336,8 @@ export function DashboardPage() {
           </table>
         </div>
       </DashSection>
+      </div>
+      </div>
     </div>
   )
 }

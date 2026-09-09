@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from 'react'
 import { X } from 'lucide-react'
 import { QkButton } from './QkButton'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
 
 interface QkDrawerProps {
   open: boolean
@@ -10,26 +11,73 @@ interface QkDrawerProps {
   children: ReactNode
   footer?: ReactNode
   width?: number
+  /** Force side drawer even on mobile */
+  forceSide?: boolean
 }
 
-export function QkDrawer({ open, onClose, title, subtitle, children, footer, width = 420 }: QkDrawerProps) {
+export function QkDrawer({
+  open,
+  onClose,
+  title,
+  subtitle,
+  children,
+  footer,
+  width = 420,
+  forceSide = false,
+}: QkDrawerProps) {
+  const { isMobile } = useBreakpoint()
+  const asSheet = isMobile && !forceSide
+
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = prev
+    }
   }, [open, onClose])
 
   if (!open) return null
 
+  if (asSheet) {
+    return (
+      <div className="qk-sheet-root" style={{ zIndex: 60 }}>
+        <button type="button" className="qk-sheet-backdrop" aria-label="Close" onClick={onClose} />
+        <aside
+          className="qk-sheet qk-sheet--bottom qk-sheet--tall"
+          role="dialog"
+          aria-modal="true"
+          aria-label={title}
+        >
+          <div className="qk-sheet__handle" />
+          <header className="qk-sheet__header">
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontWeight: 650, fontSize: 16 }}>{title}</div>
+              {subtitle && (
+                <div style={{ fontSize: 'var(--qk-font-helper)', color: 'var(--qk-text-secondary)', marginTop: 2 }}>
+                  {subtitle}
+                </div>
+              )}
+            </div>
+            <QkButton variant="ghost" size="sm" onClick={onClose} aria-label="Close drawer">
+              <X size={18} />
+            </QkButton>
+          </header>
+          <div className="qk-sheet__body">{children}</div>
+          {footer && <footer className="qk-sheet__footer">{footer}</footer>}
+        </aside>
+      </div>
+    )
+  }
+
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 60 }}>
-      <div
-        onClick={onClose}
-        style={{ position: 'absolute', inset: 0, background: 'var(--qk-overlay)' }}
-      />
+      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'var(--qk-overlay)' }} />
       <aside
         role="dialog"
         aria-modal="true"
@@ -79,6 +127,7 @@ export function QkDrawer({ open, onClose, title, subtitle, children, footer, wid
               display: 'flex',
               justifyContent: 'flex-end',
               gap: 8,
+              flexWrap: 'wrap',
             }}
           >
             {footer}

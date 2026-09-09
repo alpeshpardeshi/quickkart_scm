@@ -30,17 +30,17 @@ export function InventoryListPage() {
   ].filter(Boolean) as { id: string; label: string }[]
 
   const columns: QkColumn<InventoryItem>[] = [
-    { key: 'sku', header: 'SKU', sortable: true, render: (r) => <Link to={`/inventory/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.sku}</Link> },
-    { key: 'product', header: 'Product', sortable: true },
+    { key: 'sku', header: 'SKU', sortable: true, mobile: 'subtitle', render: (r) => <Link to={`/inventory/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.sku}</Link> },
+    { key: 'product', header: 'Product', sortable: true, mobile: 'title' },
     { key: 'warehouse', header: 'Warehouse', sortable: true },
     { key: 'zone', header: 'Zone' },
     { key: 'rack', header: 'Rack' },
     { key: 'shelf', header: 'Shelf' },
-    { key: 'bin', header: 'Bin' },
+    { key: 'bin', header: 'Bin', mobile: 'meta' },
     { key: 'batch', header: 'Batch' },
-    { key: 'available', header: 'Available', align: 'right', sortable: true, render: (r) => formatNumber(r.available) },
+    { key: 'available', header: 'Available', align: 'right', sortable: true, mobile: 'field', render: (r) => formatNumber(r.available) },
     { key: 'reserved', header: 'Reserved', align: 'right', render: (r) => formatNumber(r.reserved) },
-    { key: 'status', header: 'Status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
+    { key: 'status', header: 'Status', mobile: 'status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
     { key: 'expiry', header: 'Expiry', sortable: true },
   ]
 
@@ -97,6 +97,7 @@ export function InventoryListPage() {
       />
 
       <QkTable
+        mobileMode="cards"
         columns={columns}
         rows={list.rows as unknown as InventoryItem[]}
         loading={list.loading}

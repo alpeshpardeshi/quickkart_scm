@@ -87,13 +87,13 @@ export function CustomersPage() {
   }
 
   const columns: QkColumn<Customer>[] = [
-    { key: 'code', header: 'Code', sortable: true, render: (r) => <Link to={`/customers/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.code}</Link> },
-    { key: 'name', header: 'Customer', sortable: true },
-    { key: 'contact', header: 'Contact' },
-    { key: 'city', header: 'City', sortable: true },
-    { key: 'type', header: 'Type' },
-    { key: 'creditLimit', header: 'Credit limit', align: 'right', render: (r) => formatCurrency(r.creditLimit) },
-    { key: 'status', header: 'Status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
+    { key: 'code', header: 'Code', sortable: true, mobile: 'title', render: (r) => <Link to={`/customers/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.code}</Link> },
+    { key: 'name', header: 'Customer', sortable: true, mobile: 'subtitle' },
+    { key: 'contact', header: 'Contact', mobile: 'meta' },
+    { key: 'city', header: 'City', sortable: true, mobile: 'field' },
+    { key: 'type', header: 'Type', mobile: 'field' },
+    { key: 'creditLimit', header: 'Credit limit', align: 'right', mobile: 'meta', render: (r) => formatCurrency(r.creditLimit) },
+    { key: 'status', header: 'Status', mobile: 'status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
   ]
 
   return (
@@ -123,6 +123,7 @@ export function CustomersPage() {
         onClearAll={() => { setStatus(''); list.setSearch('') }}
       />
       <QkTable
+        mobileMode="cards"
         columns={columns}
         rows={list.rows as unknown as Customer[]}
         sortKey={list.sortKey}

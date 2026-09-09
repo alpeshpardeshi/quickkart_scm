@@ -2,6 +2,10 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
+import { MobileBottomNav } from './MobileBottomNav'
+import { MobileNavDrawer } from './MobileNavDrawer'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
+import { resolvePageTitle } from './navConfig'
 
 const breadcrumbMap: Record<string, { label: string; parent?: string }[]> = {
   '/dashboard': [{ label: 'Dashboard' }],
@@ -61,24 +65,69 @@ function resolveBreadcrumbs(pathname: string) {
 
 export function AppShell({ children }: { children?: ReactNode }) {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('quickart-sidebar') === '1')
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const [mobileNavMode, setMobileNavMode] = useState<'menu' | 'more'>('menu')
   const location = useLocation()
+  const { isMobile } = useBreakpoint()
 
   useEffect(() => {
     localStorage.setItem('quickart-sidebar', collapsed ? '1' : '0')
   }, [collapsed])
 
+  useEffect(() => {
+    setMobileNavOpen(false)
+  }, [location.pathname])
+
+  useEffect(() => {
+    document.body.classList.toggle('qk-is-mobile', isMobile)
+    document.documentElement.style.setProperty(
+      '--qk-mobile-bottom-nav-h',
+      isMobile ? 'calc(56px + env(safe-area-inset-bottom, 0px))' : '0px',
+    )
+    return () => {
+      document.body.classList.remove('qk-is-mobile')
+    }
+  }, [isMobile])
+
+  const breadcrumbs = resolveBreadcrumbs(location.pathname)
+  const pageTitle = resolvePageTitle(location.pathname, breadcrumbs)
+
+  const openMenu = () => {
+    setMobileNavMode('menu')
+    setMobileNavOpen(true)
+  }
+  const openMore = () => {
+    setMobileNavMode('more')
+    setMobileNavOpen(true)
+  }
+
   return (
-    <div className="qk-app" style={{ display: 'flex', minHeight: '100%' }}>
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
+    <div className={`qk-app${isMobile ? ' qk-app--mobile' : ''}`} style={{ display: 'flex', minHeight: '100%' }}>
+      {!isMobile && (
+        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
+      )}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         <TopBar
-          breadcrumbs={resolveBreadcrumbs(location.pathname)}
-          onToggleSidebar={() => setCollapsed((v) => !v)}
+          breadcrumbs={breadcrumbs}
+          pageTitle={pageTitle}
+          mobile={isMobile}
+          onToggleSidebar={() => (isMobile ? openMenu() : setCollapsed((v) => !v))}
         />
-        <main style={{ flex: 1, minWidth: 0 }}>
+        <main className="qk-app-main" style={{ flex: 1, minWidth: 0 }}>
           {children || <Outlet />}
         </main>
       </div>
+
+      {isMobile && (
+        <>
+          <MobileBottomNav onMore={openMore} moreOpen={mobileNavOpen && mobileNavMode === 'more'} />
+          <MobileNavDrawer
+            open={mobileNavOpen}
+            mode={mobileNavMode}
+            onClose={() => setMobileNavOpen(false)}
+          />
+        </>
+      )}
     </div>
   )
 }

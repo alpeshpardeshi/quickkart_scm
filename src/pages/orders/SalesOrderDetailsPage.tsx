@@ -1,12 +1,13 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { PageHeader } from '../../components/layout/PageHeader'
+import { PageHeader, QkStickyActions } from '../../components/layout/PageHeader'
 import {
   QkButton, QkDrawer, QkInput, QkMetric, QkModal, QkSelect, QkStatusBadge,
   QkStepper, QkTable, QkTabs, type QkColumn,
 } from '../../components/ui'
 import { useData } from '../../context/DataContext'
 import { useToast } from '../../context/ToastContext'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { formatCurrency, formatDate, formatDateTime, formatNumber, statusTone } from '../../utils'
 import type { PicklistLine, ReservationAllocation, ReturnRecord, SalesOrderItem } from '../../types'
 
@@ -102,6 +103,7 @@ export function SalesOrderDetailsPage() {
     svcCreateReturn, svcProcessReturnQc,
   } = useData()
   const { pushToast } = useToast()
+  const { isMobile } = useBreakpoint()
   const order = salesOrders.find((s) => s.id === id)
 
   const [tab, setTab] = useState<TabId>('overview')
@@ -430,15 +432,20 @@ export function SalesOrderDetailsPage() {
     }, 'Return QC complete')
   }
 
+  const actions = contextualActions()
+
   return (
     <div className="qk-page qk-animate-in">
       <PageHeader
         title={order.soNumber}
         subtitle={`${order.customer} · ${order.customerType} · ${order.warehouse}`}
+        secondaryActions={isMobile ? [
+          { id: 'back', label: 'Back to Orders', onClick: () => { window.history.back() } },
+        ] : undefined}
         actions={(
           <>
             <Link to="/sales-orders"><QkButton variant="outline">Back to Orders</QkButton></Link>
-            {contextualActions()}
+            {actions}
           </>
         )}
       />
@@ -921,6 +928,12 @@ export function SalesOrderDetailsPage() {
           <div className="qk-secondary" style={{ fontSize: 12 }}>Reusable + Damaged + Wastage must equal returned qty.</div>
         </div>
       </QkModal>
+
+      {isMobile && actions.length > 0 && (
+        <QkStickyActions>
+          {actions.slice(0, 2)}
+        </QkStickyActions>
+      )}
     </div>
   )
 }

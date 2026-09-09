@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { ArrowDown, ArrowUp, ArrowUpDown, Columns3 } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, ChevronUp, Columns3 } from 'lucide-react'
 import { QkEmptyState } from './QkEmptyState'
 import { QkSkeleton } from './QkSkeleton'
 import { QkPagination } from './QkPagination'
 import { QkCheckbox } from './QkCheckbox'
 import { QkButton } from './QkButton'
 import { QkDropdown } from './QkDropdown'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
+
+export type QkMobileRole = 'title' | 'subtitle' | 'status' | 'meta' | 'field' | 'action' | false
 
 export interface QkColumn<T> {
   key: string
@@ -15,6 +18,8 @@ export interface QkColumn<T> {
   align?: 'left' | 'right' | 'center'
   hideable?: boolean
   defaultHidden?: boolean
+  /** How this column appears in mobile card mode */
+  mobile?: QkMobileRole
   render?: (row: T) => ReactNode
   accessor?: (row: T) => ReactNode
 }
@@ -43,6 +48,15 @@ interface QkTableProps<T extends { id: string }> {
   columnVisibility?: boolean
   storageKey?: string
   toolbar?: ReactNode
+  /** cards = operational list on mobile; table = always table (analytical) */
+  mobileMode?: 'table' | 'cards'
+  renderCard?: (row: T, helpers: { expanded: boolean; toggle: () => void }) => ReactNode
+}
+
+function cellValue<T>(col: QkColumn<T>, row: T): ReactNode {
+  if (col.render) return col.render(row)
+  if (col.accessor) return col.accessor(row)
+  return (row as Record<string, unknown>)[col.key] as ReactNode
 }
 
 export function QkTable<T extends { id: string }>({
@@ -69,7 +83,13 @@ export function QkTable<T extends { id: string }>({
   columnVisibility = true,
   storageKey,
   toolbar,
+  mobileMode = 'table',
+  renderCard,
 }: QkTableProps<T>) {
+  const { isMobile } = useBreakpoint()
+  const useCards = isMobile && mobileMode === 'cards'
+  const [expandedIds, setExpandedIds] = useState<string[]>([])
+
   const hideableCols = useMemo(
     () => columns.filter((c) => c.hideable !== false),
     [columns],
@@ -117,6 +137,152 @@ export function QkTable<T extends { id: string }>({
   const selectable = Boolean(onToggleRow && selectedIds)
   const allSelected = selectable && rows.length > 0 && rows.every((r) => selectedIds!.includes(r.id))
   const colSpan = visibleColumns.length + (selectable ? 1 : 0)
+
+  const titleCol = columns.find((c) => c.mobile === 'title') || columns[0]
+  const subtitleCol = columns.find((c) => c.mobile === 'subtitle')
+  const statusCol = columns.find((c) => c.mobile === 'status')
+  const metaCols = columns.filter((c) => c.mobile === 'meta')
+  const fieldCols = columns.filter((c) => c.mobile === 'field')
+  const actionCol = columns.find((c) => c.mobile === 'action')
+  const expandCols = columns.filter(
+    (c) =>
+      c.mobile !== 'title' &&
+      c.mobile !== 'subtitle' &&
+      c.mobile !== 'status' &&
+      c.mobile !== 'meta' &&
+      c.mobile !== 'field' &&
+      c.mobile !== 'action' &&
+      c.mobile !== false &&
+      c.key !== titleCol?.key &&
+      !c.defaultHidden,
+  )
+
+  const pagination =
+    onPageChange && page && pageCount && total !== undefined ? (
+      <QkPagination
+        page={page}
+        pageCount={pageCount}
+        total={total}
+        pageSize={pageSize}
+        onPageChange={onPageChange}
+      />
+    ) : null
+
+  if (useCards) {
+    return (
+      <div className="qk-surface qk-table-cards" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        {(columnVisibility || toolbar) && (
+          <div className="qk-table-cards__toolbar">
+            {toolbar}
+            {selectable && (
+              <QkCheckbox checked={allSelected} onChange={() => onToggleAll?.()} aria-label="Select all" label="Select all" />
+            )}
+          </div>
+        )}
+        {loading && (
+          <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <QkSkeleton key={i} height={88} />
+            ))}
+          </div>
+        )}
+        {!loading && error && <QkEmptyState title="Unable to load data" description={error} tone="danger" />}
+        {!loading && !error && rows.length === 0 && (
+          <QkEmptyState title={emptyTitle} description={emptyDescription} action={emptyAction} />
+        )}
+        {!loading && !error && (
+          <div className="qk-table-cards__list">
+            {rows.map((row) => {
+              const expanded = expandedIds.includes(row.id)
+              const toggle = () =>
+                setExpandedIds((prev) =>
+                  prev.includes(row.id) ? prev.filter((id) => id !== row.id) : [...prev, row.id],
+                )
+              const selected = selectedIds?.includes(row.id)
+
+              if (renderCard) {
+                return (
+                  <div key={row.id} className={`qk-ops-card${selected ? ' is-selected' : ''}`}>
+                    {selectable && (
+                      <div onClick={(e) => e.stopPropagation()} style={{ marginBottom: 8 }}>
+                        <QkCheckbox checked={Boolean(selected)} onChange={() => onToggleRow?.(row.id)} aria-label="Select" />
+                      </div>
+                    )}
+                    {renderCard(row, { expanded, toggle })}
+                  </div>
+                )
+              }
+
+              return (
+                <article
+                  key={row.id}
+                  className={`qk-ops-card${selected ? ' is-selected' : ''}${onRowClick ? ' is-clickable' : ''}`}
+                  onClick={() => onRowClick?.(row)}
+                >
+                  <div className="qk-ops-card__head">
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      {selectable && (
+                        <div onClick={(e) => e.stopPropagation()} style={{ marginBottom: 6 }}>
+                          <QkCheckbox checked={Boolean(selected)} onChange={() => onToggleRow?.(row.id)} aria-label="Select" />
+                        </div>
+                      )}
+                      <div className="qk-ops-card__title">{titleCol ? cellValue(titleCol, row) : row.id}</div>
+                      {subtitleCol && <div className="qk-ops-card__subtitle">{cellValue(subtitleCol, row)}</div>}
+                    </div>
+                    {statusCol && <div className="qk-ops-card__status">{cellValue(statusCol, row)}</div>}
+                  </div>
+
+                  {(metaCols.length > 0 || fieldCols.length > 0) && (
+                    <div className="qk-ops-card__meta">
+                      {[...metaCols, ...fieldCols].map((col) => (
+                        <div key={col.key} className="qk-ops-card__meta-item">
+                          <span className="qk-ops-card__meta-label">{col.header}</span>
+                          <span className="qk-ops-card__meta-value">{cellValue(col, row)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {expandCols.length > 0 && (
+                    <>
+                      <button
+                        type="button"
+                        className="qk-ops-card__expand"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggle()
+                        }}
+                      >
+                        {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        {expanded ? 'Less' : 'More'}
+                      </button>
+                      {expanded && (
+                        <div className="qk-ops-card__extra">
+                          {expandCols.map((col) => (
+                            <div key={col.key} className="qk-ops-card__meta-item">
+                              <span className="qk-ops-card__meta-label">{col.header}</span>
+                              <span className="qk-ops-card__meta-value">{cellValue(col, row)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {actionCol && (
+                    <div className="qk-ops-card__actions" onClick={(e) => e.stopPropagation()}>
+                      {cellValue(actionCol, row)}
+                    </div>
+                  )}
+                </article>
+              )
+            })}
+          </div>
+        )}
+        {pagination}
+      </div>
+    )
+  }
 
   return (
     <div className="qk-surface" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
@@ -249,11 +415,7 @@ export function QkTable<T extends { id: string }>({
                   )}
                   {visibleColumns.map((col) => (
                     <td key={col.key} style={{ ...tdStyle, textAlign: col.align || 'left' }}>
-                      {col.render
-                        ? col.render(row)
-                        : col.accessor
-                          ? col.accessor(row)
-                          : (row as Record<string, unknown>)[col.key] as ReactNode}
+                      {cellValue(col, row)}
                     </td>
                   ))}
                 </tr>
@@ -262,15 +424,7 @@ export function QkTable<T extends { id: string }>({
           </tbody>
         </table>
       </div>
-      {onPageChange && page && pageCount && total !== undefined && (
-        <QkPagination
-          page={page}
-          pageCount={pageCount}
-          total={total}
-          pageSize={pageSize}
-          onPageChange={onPageChange}
-        />
-      )}
+      {pagination}
     </div>
   )
 }

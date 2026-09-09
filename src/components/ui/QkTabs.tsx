@@ -12,15 +12,7 @@ interface QkTabsProps {
 
 export function QkTabs({ tabs, value, onChange }: QkTabsProps) {
   return (
-    <div
-      role="tablist"
-      style={{
-        display: 'flex',
-        gap: 2,
-        borderBottom: '1px solid var(--qk-border)',
-        overflowX: 'auto',
-      }}
-    >
+    <div role="tablist" className="qk-tabs qk-scroll-hidden">
       {tabs.map((tab) => {
         const active = tab.id === value
         return (
@@ -30,35 +22,11 @@ export function QkTabs({ tabs, value, onChange }: QkTabsProps) {
             aria-selected={active}
             type="button"
             onClick={() => onChange(tab.id)}
-            style={{
-              height: 36,
-              padding: '0 12px',
-              border: 'none',
-              background: 'transparent',
-              color: active ? 'var(--qk-primary)' : 'var(--qk-text-secondary)',
-              fontWeight: active ? 600 : 500,
-              fontSize: 'var(--qk-font-btn)',
-              borderBottom: active ? '2px solid var(--qk-primary)' : '2px solid transparent',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-            }}
+            className={`qk-tabs__tab${active ? ' is-active' : ''}`}
           >
             {tab.label}
             {typeof tab.count === 'number' && (
-              <span
-                style={{
-                  fontSize: 11,
-                  background: active ? 'var(--qk-primary-soft)' : 'var(--qk-bg)',
-                  color: active ? 'var(--qk-primary)' : 'var(--qk-text-muted)',
-                  borderRadius: 999,
-                  padding: '1px 6px',
-                }}
-              >
-                {tab.count}
-              </span>
+              <span className="qk-tabs__count">{tab.count}</span>
             )}
           </button>
         )

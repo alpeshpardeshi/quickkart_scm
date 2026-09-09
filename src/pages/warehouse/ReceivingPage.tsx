@@ -67,15 +67,15 @@ export function ReceivingPage() {
   }
 
   const columns: QkColumn<ReceivingRecord>[] = [
-    { key: 'grnNumber', header: 'GRN', sortable: true, render: (r) => <Link to={`/receiving/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.grnNumber}</Link> },
-    { key: 'poNumber', header: 'PO', sortable: true },
-    { key: 'vendor', header: 'Vendor', sortable: true },
-    { key: 'warehouse', header: 'Warehouse' },
-    { key: 'expectedQty', header: 'Expected', align: 'right', render: (r) => formatNumber(r.expectedQty) },
-    { key: 'receivedQty', header: 'Received', align: 'right', render: (r) => formatNumber(r.receivedQty) },
+    { key: 'grnNumber', header: 'GRN', sortable: true, mobile: 'title', render: (r) => <Link to={`/receiving/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.grnNumber}</Link> },
+    { key: 'poNumber', header: 'PO', sortable: true, mobile: 'meta' },
+    { key: 'vendor', header: 'Vendor', sortable: true, mobile: 'subtitle' },
+    { key: 'warehouse', header: 'Warehouse', mobile: 'meta' },
+    { key: 'expectedQty', header: 'Expected', align: 'right', mobile: 'field', render: (r) => formatNumber(r.expectedQty) },
+    { key: 'receivedQty', header: 'Received', align: 'right', mobile: 'field', render: (r) => formatNumber(r.receivedQty) },
     { key: 'acceptedQty', header: 'Accepted', align: 'right', render: (r) => formatNumber(r.acceptedQty) },
     { key: 'rejectedQty', header: 'Rejected', align: 'right', render: (r) => formatNumber(r.rejectedQty) },
-    { key: 'status', header: 'Status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
+    { key: 'status', header: 'Status', mobile: 'status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
     { key: 'receivedAt', header: 'Started', render: (r) => formatDateTime(r.receivedAt) },
   ]
 
@@ -102,6 +102,7 @@ export function ReceivingPage() {
         onClearAll={() => { setStatus(''); list.setSearch('') }}
       />
       <QkTable
+        mobileMode="cards"
         columns={columns}
         rows={list.rows as unknown as ReceivingRecord[]}
         sortKey={list.sortKey}

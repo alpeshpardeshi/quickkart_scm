@@ -50,18 +50,18 @@ export function DispatchPage() {
   }
 
   const columns: QkColumn<DispatchRecord>[] = [
-    { key: 'dispatchNo', header: 'Dispatch', sortable: true, render: (r) => <Link to={`/dispatch/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.dispatchNo}</Link> },
-    { key: 'soNumber', header: 'SO', sortable: true, render: (r) => (
+    { key: 'dispatchNo', header: 'Dispatch', sortable: true, mobile: 'title', render: (r) => <Link to={`/dispatch/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.dispatchNo}</Link> },
+    { key: 'soNumber', header: 'SO', sortable: true, mobile: 'meta', render: (r) => (
       r.soId
         ? <Link to={`/sales-orders/${r.soId}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.soNumber}</Link>
         : r.soNumber
     ) },
-    { key: 'customer', header: 'Customer', sortable: true },
-    { key: 'warehouse', header: 'Warehouse' },
-    { key: 'items', header: 'Items', align: 'right' },
+    { key: 'customer', header: 'Customer', sortable: true, mobile: 'subtitle' },
+    { key: 'warehouse', header: 'Warehouse', mobile: 'meta' },
+    { key: 'items', header: 'Items', align: 'right', mobile: 'field' },
     { key: 'vehicle', header: 'Vehicle' },
     { key: 'driver', header: 'Driver' },
-    { key: 'status', header: 'Status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
+    { key: 'status', header: 'Status', mobile: 'status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
   ]
 
   return (
@@ -82,7 +82,7 @@ export function DispatchPage() {
         onRemoveChip={() => setStatus('')}
         onClearAll={() => { setStatus(''); list.setSearch('') }}
       />
-      <QkTable columns={columns} rows={list.rows as unknown as DispatchRecord[]} sortKey={list.sortKey} sortDir={list.sortDir} onSort={list.onSort} page={list.page} pageCount={list.pageCount} total={list.total} pageSize={list.pageSize} onPageChange={list.setPage} onRowClick={open} emptyTitle="No dispatches matched your filters." />
+      <QkTable mobileMode="cards" columns={columns} rows={list.rows as unknown as DispatchRecord[]} sortKey={list.sortKey} sortDir={list.sortDir} onSort={list.onSort} page={list.page} pageCount={list.pageCount} total={list.total} pageSize={list.pageSize} onPageChange={list.setPage} onRowClick={open} emptyTitle="No dispatches matched your filters." />
       <QkDrawer
         open={Boolean(selected)}
         onClose={() => setSelected(null)}

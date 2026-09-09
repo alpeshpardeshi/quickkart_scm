@@ -52,14 +52,14 @@ export function PicklistsPage() {
   }
 
   const columns: QkColumn<Picklist>[] = [
-    { key: 'picklistNo', header: 'Picklist', sortable: true, render: (r) => <Link to={`/picklists/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.picklistNo}</Link> },
-    { key: 'soNumber', header: 'SO', sortable: true, render: (r) => <Link to={`/sales-orders/${r.soId}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.soNumber}</Link> },
-    { key: 'warehouse', header: 'Warehouse' },
-    { key: 'items', header: 'Items', align: 'right' },
-    { key: 'picked', header: 'Picked', align: 'right' },
-    { key: 'priority', header: 'Priority', render: (r) => <QkStatusBadge label={r.priority} tone={statusTone(r.priority)} /> },
+    { key: 'picklistNo', header: 'Picklist', sortable: true, mobile: 'title', render: (r) => <Link to={`/picklists/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.picklistNo}</Link> },
+    { key: 'soNumber', header: 'SO', sortable: true, mobile: 'subtitle', render: (r) => <Link to={`/sales-orders/${r.soId}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.soNumber}</Link> },
+    { key: 'warehouse', header: 'Warehouse', mobile: 'meta' },
+    { key: 'items', header: 'Items', align: 'right', mobile: 'field' },
+    { key: 'picked', header: 'Picked', align: 'right', mobile: 'field' },
+    { key: 'priority', header: 'Priority', mobile: 'meta', render: (r) => <QkStatusBadge label={r.priority} tone={statusTone(r.priority)} /> },
     { key: 'assignedTo', header: 'Assigned' },
-    { key: 'status', header: 'Status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
+    { key: 'status', header: 'Status', mobile: 'status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
     { key: 'createdAt', header: 'Created', render: (r) => formatDateTime(r.createdAt) },
   ]
 
@@ -85,7 +85,7 @@ export function PicklistsPage() {
         onRemoveChip={() => setStatus('')}
         onClearAll={() => { setStatus(''); list.setSearch('') }}
       />
-      <QkTable columns={columns} rows={list.rows as unknown as Picklist[]} sortKey={list.sortKey} sortDir={list.sortDir} onSort={list.onSort} page={list.page} pageCount={list.pageCount} total={list.total} pageSize={list.pageSize} onPageChange={list.setPage} onRowClick={(r) => navigate(`/picklists/${r.id}`)} emptyTitle="No picklists matched your filters." />
+      <QkTable mobileMode="cards" columns={columns} rows={list.rows as unknown as Picklist[]} sortKey={list.sortKey} sortDir={list.sortDir} onSort={list.onSort} page={list.page} pageCount={list.pageCount} total={list.total} pageSize={list.pageSize} onPageChange={list.setPage} onRowClick={(r) => navigate(`/picklists/${r.id}`)} emptyTitle="No picklists matched your filters." />
       <QkDrawer open={open} onClose={() => setOpen(false)} title="Generate picklist" footer={<><QkButton variant="outline" onClick={() => setOpen(false)}>Cancel</QkButton><QkButton onClick={generate}>Generate</QkButton></>}>
         <QkSelect label="Sales order" required value={soId} error={error} placeholder="Select order" options={eligible.map((s) => ({ label: `${s.soNumber} · ${s.customer}`, value: s.id }))} onChange={(e) => setSoId(e.target.value)} />
       </QkDrawer>

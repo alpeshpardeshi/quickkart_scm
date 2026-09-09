@@ -1,15 +1,17 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { PageHeader } from '../../components/layout/PageHeader'
+import { PageHeader, QkStickyActions } from '../../components/layout/PageHeader'
 import { QkBarcodeScanner, QkButton, QkInput, QkMetric, QkStatusBadge } from '../../components/ui'
 import { useData } from '../../context/DataContext'
 import { useToast } from '../../context/ToastContext'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { formatDateTime, formatNumber, statusTone } from '../../utils'
 
 export function ReceivingDetailsPage() {
   const { id } = useParams()
   const { receiving, setReceiving } = useData()
   const { pushToast } = useToast()
+  const { isMobile } = useBreakpoint()
   const record = receiving.find((r) => r.id === id)
 
   const [receivedQty, setReceivedQty] = useState(String(record?.receivedQty || 0))
@@ -122,6 +124,12 @@ export function ReceivingDetailsPage() {
           )}
         </section>
       </div>
+      {isMobile && (
+        <QkStickyActions>
+          <QkButton variant="outline" loading={saving} onClick={() => saveProgress(false)}>Save</QkButton>
+          <QkButton loading={saving} onClick={() => saveProgress(true)}>Complete Receiving</QkButton>
+        </QkStickyActions>
+      )}
     </div>
   )
 }

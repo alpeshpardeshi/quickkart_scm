@@ -1,15 +1,17 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { PageHeader } from '../../components/layout/PageHeader'
+import { PageHeader, QkStickyActions } from '../../components/layout/PageHeader'
 import { QkButton, QkMetric, QkSelect, QkStatusBadge } from '../../components/ui'
 import { useData } from '../../context/DataContext'
 import { useToast } from '../../context/ToastContext'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { formatNumber, statusTone } from '../../utils'
 
 export function PutAwayDetailsPage() {
   const { id } = useParams()
   const { putAwayTasks, bins, svcConfirmPutAway } = useData()
   const { pushToast } = useToast()
+  const { isMobile } = useBreakpoint()
   const task = putAwayTasks.find((t) => t.id === id)
   const warehouseBins = bins.filter((b) => b.warehouseId === task?.warehouseId && b.status === 'Available')
   const [destination, setDestination] = useState(task?.destinationBinId || task?.suggestedBinId || '')
@@ -77,6 +79,11 @@ export function PutAwayDetailsPage() {
           />
         </section>
       </div>
+      {isMobile && task.status !== 'Completed' && (
+        <QkStickyActions>
+          <QkButton loading={saving} onClick={confirm}>Confirm Put-away</QkButton>
+        </QkStickyActions>
+      )}
     </div>
   )
 }

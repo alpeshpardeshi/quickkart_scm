@@ -73,15 +73,15 @@ export function QcPage() {
   }
 
   const columns: QkColumn<QcInspection>[] = [
-    { key: 'reference', header: 'QC Ref', sortable: true, render: (r) => <strong style={{ color: 'var(--qk-primary)' }}>{r.reference}</strong> },
-    { key: 'product', header: 'Product', sortable: true },
-    { key: 'sku', header: 'SKU' },
+    { key: 'reference', header: 'QC Ref', sortable: true, mobile: 'title', render: (r) => <strong style={{ color: 'var(--qk-primary)' }}>{r.reference}</strong> },
+    { key: 'product', header: 'Product', sortable: true, mobile: 'subtitle' },
+    { key: 'sku', header: 'SKU', mobile: 'meta' },
     { key: 'batch', header: 'Batch' },
-    { key: 'receivedQty', header: 'Received', align: 'right', render: (r) => formatNumber(r.receivedQty) },
-    { key: 'acceptedQty', header: 'Accepted', align: 'right', render: (r) => formatNumber(r.acceptedQty) },
+    { key: 'receivedQty', header: 'Received', align: 'right', mobile: 'field', render: (r) => formatNumber(r.receivedQty) },
+    { key: 'acceptedQty', header: 'Accepted', align: 'right', mobile: 'field', render: (r) => formatNumber(r.acceptedQty) },
     { key: 'rejectedQty', header: 'Rejected', align: 'right', render: (r) => formatNumber(r.rejectedQty) },
-    { key: 'warehouse', header: 'Warehouse' },
-    { key: 'status', header: 'Status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
+    { key: 'warehouse', header: 'Warehouse', mobile: 'meta' },
+    { key: 'status', header: 'Status', mobile: 'status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
   ]
 
   return (
@@ -112,6 +112,7 @@ export function QcPage() {
         onClearAll={() => { setStatus(''); list.setSearch('') }}
       />
       <QkTable
+        mobileMode="cards"
         columns={columns}
         rows={list.rows as unknown as QcInspection[]}
         sortKey={list.sortKey}

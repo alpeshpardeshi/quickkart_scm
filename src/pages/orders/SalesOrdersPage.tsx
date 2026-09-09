@@ -262,32 +262,43 @@ export function SalesOrdersPage() {
       sortable: true,
       width: 110,
       hideable: false,
+      mobile: 'title',
       render: (r) => (
         <Link to={`/sales-orders/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>
           {r.soNumber}
         </Link>
       ),
     },
-    { key: 'customer', header: 'Customer', sortable: true, width: 160 },
-    { key: 'customerType', header: 'Type', width: 64, render: (r) => r.customerType },
-    { key: 'orderDate', header: 'Order date', sortable: true, width: 100, render: (r) => formatDate(r.orderDate) },
-    { key: 'deliveryDate', header: 'Required', width: 100, render: (r) => formatDate(r.deliveryDate) },
-    { key: 'warehouse', header: 'Warehouse', width: 150 },
+    { key: 'customer', header: 'Customer', sortable: true, width: 160, mobile: 'subtitle' },
+    { key: 'customerType', header: 'Type', width: 64, mobile: false, render: (r) => r.customerType },
+    { key: 'orderDate', header: 'Order date', sortable: true, width: 100, mobile: false, render: (r) => formatDate(r.orderDate) },
+    { key: 'deliveryDate', header: 'Delivery', width: 100, mobile: 'meta', render: (r) => formatDate(r.deliveryDate) },
+    { key: 'warehouse', header: 'Warehouse', width: 150, mobile: 'meta' },
     {
       key: 'itemCount',
-      header: 'Ordered',
+      header: 'Items',
       align: 'right',
       width: 88,
+      mobile: 'field',
       render: (r) => {
         const qty = r.items.reduce((s, i) => s + i.orderedQty, 0)
         return `${formatNumber(qty)} / ${r.itemCount}`
       },
     },
     {
+      key: 'amount',
+      header: 'Amount',
+      align: 'right',
+      width: 100,
+      mobile: 'field',
+      render: (r) => formatCurrency(r.amount),
+    },
+    {
       key: 'reserved',
       header: 'Reserved',
       align: 'right',
       width: 80,
+      mobile: false,
       render: (r) => formatNumber(r.items.reduce((s, i) => s + i.reservedQty, 0)),
     },
     {
@@ -295,6 +306,7 @@ export function SalesOrdersPage() {
       header: 'Picked',
       align: 'right',
       width: 72,
+      mobile: false,
       render: (r) => formatNumber(r.items.reduce((s, i) => s + i.pickedQty, 0)),
     },
     {
@@ -302,6 +314,7 @@ export function SalesOrdersPage() {
       header: 'Packed',
       align: 'right',
       width: 72,
+      mobile: false,
       render: (r) => formatNumber(r.items.reduce((s, i) => s + i.packedQty, 0)),
     },
     {
@@ -309,6 +322,7 @@ export function SalesOrdersPage() {
       header: 'Dispatched',
       align: 'right',
       width: 88,
+      mobile: false,
       render: (r) => formatNumber(r.items.reduce((s, i) => s + i.dispatchedQty, 0)),
     },
     {
@@ -317,18 +331,21 @@ export function SalesOrdersPage() {
       align: 'right',
       width: 96,
       defaultHidden: true,
+      mobile: false,
       render: (r) => formatNumber(r.items.reduce((s, i) => s + i.backorderedQty, 0)),
     },
     {
       key: 'status',
       header: 'Status',
       width: 120,
+      mobile: 'status',
       render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} />,
     },
     {
       key: 'priority',
       header: 'Priority',
       width: 88,
+      mobile: false,
       render: (r) => <QkStatusBadge label={r.priority} tone={statusTone(r.priority)} />,
     },
     {
@@ -337,9 +354,10 @@ export function SalesOrdersPage() {
       width: 108,
       align: 'right',
       hideable: false,
+      mobile: 'action',
       render: (r) => (
         <div
-          style={{ display: 'inline-flex', justifyContent: 'flex-end', gap: 6 }}
+          style={{ display: 'inline-flex', justifyContent: 'flex-end', gap: 6, width: '100%' }}
           onClick={(e) => e.stopPropagation()}
         >
           <QkButton
@@ -348,8 +366,9 @@ export function SalesOrdersPage() {
             leftIcon={<Eye size={13} />}
             onClick={() => navigate(`/sales-orders/${r.id}`)}
             aria-label={`Open ${r.soNumber}`}
+            style={{ flex: 1, minHeight: 40 }}
           >
-            Open
+            View Order
           </QkButton>
         </div>
       ),
@@ -369,6 +388,14 @@ export function SalesOrdersPage() {
       <PageHeader
         title="Sales Orders"
         subtitle="Order lifecycle — create, reserve, pick, pack, dispatch from one workspace."
+        primaryAction={(
+          <QkButton
+            leftIcon={<Plus size={14} />}
+            onClick={() => { resetForm(); setOpen(true) }}
+          >
+            Create
+          </QkButton>
+        )}
         actions={(
           <QkButton
             leftIcon={<Plus size={14} />}
@@ -378,7 +405,7 @@ export function SalesOrdersPage() {
           </QkButton>
         )}
       />
-      <div className="qk-grid-metrics">
+      <div className="qk-grid-metrics qk-dash-kpi-mobile-hide-extra">
         <QkMetric label="Open orders" value={salesOrders.filter((s) => !['Delivered', 'Cancelled'].includes(s.status)).length} />
         <QkMetric label="Drafts" value={salesOrders.filter((s) => s.status === 'Draft').length} />
         <QkMetric label="Picking" value={salesOrders.filter((s) => ['Picking', 'Partially Picked'].includes(s.status)).length} />
@@ -456,6 +483,7 @@ export function SalesOrdersPage() {
         onRowClick={(r) => navigate(`/sales-orders/${r.id}`)}
         storageKey="sales-orders-list"
         emptyTitle="No sales orders matched your filters."
+        mobileMode="cards"
       />
 
       <QkDrawer
@@ -562,12 +590,12 @@ export function SalesOrdersPage() {
                 return (
                   <div
                     key={line.key}
+                    className="qk-so-line-grid"
                     style={{
                       border: '1px solid var(--qk-border)',
                       borderRadius: 'var(--qk-radius)',
                       padding: 10,
                       display: 'grid',
-                      gridTemplateColumns: '1.4fr 0.6fr 0.7fr 0.6fr 0.5fr auto',
                       gap: 8,
                       alignItems: 'end',
                     }}
