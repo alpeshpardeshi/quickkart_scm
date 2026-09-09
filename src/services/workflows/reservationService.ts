@@ -211,7 +211,7 @@ export function generatePicklistForSo(state: AppState, soId: string, performedBy
         bin: bal?.bin || '',
         requiredQty: a.allocatedQty - a.consumedQty,
         pickedQty: 0,
-        status: 'Open',
+        status: 'Open' as const,
         sequence: idx + 1,
       }
     }).filter((l) => l.requiredQty > 0)

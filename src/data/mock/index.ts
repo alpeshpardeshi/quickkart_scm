@@ -966,7 +966,7 @@ export const inventory: InventoryBalance[] = [
     available: 0,
     reserved: 120,
     damaged: 4,
-    status: 'Reserved',
+    status: 'Damaged',
     expiry: '2027-03-01',
     mfgDate: '2026-03-01',
   },

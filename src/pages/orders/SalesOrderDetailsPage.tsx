@@ -162,7 +162,7 @@ export function SalesOrderDetailsPage() {
       events.push({ at: pl.createdAt, text: `Picklist ${pl.picklistNo} generated (${pl.lines.length} lines)` })
     }
     for (const m of movements.filter((x) => x.referenceId === order.id || soPicklists.some((p) => p.id === x.referenceId) || soDispatches.some((d) => d.id === x.referenceId) || soReturns.some((r) => r.id === x.referenceId) || soPackings.some((p) => p.id === x.referenceId))) {
-      events.push({ at: m.timestamp, text: `${m.movementType} · ${m.sku} · qty ${m.quantity}` })
+      events.push({ at: m.timestamp, text: `${m.movementType} · ${m.sku} · qty ${m.qty}` })
     }
     for (const n of notifications.filter((x) => x.referenceId === order.id)) {
       events.push({ at: n.createdAt, text: n.message })
