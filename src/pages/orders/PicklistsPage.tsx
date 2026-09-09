@@ -33,7 +33,9 @@ export function PicklistsPage() {
     const pl: Picklist = {
       id: uid('pl'),
       picklistNo: `PL-${10230 + picklists.length + 1}`,
+      soId: so.id,
       soNumber: so.soNumber,
+      warehouseId: so.warehouseId,
       warehouse: so.warehouse,
       items: so.itemCount,
       picked: 0,
@@ -41,6 +43,7 @@ export function PicklistsPage() {
       assignedTo: 'Suresh Yadav',
       priority: 'High',
       createdAt: new Date().toISOString(),
+      lines: [],
     }
     setPicklists((prev) => [pl, ...prev])
     setSalesOrders((prev) => prev.map((s) => (s.id === soId ? { ...s, status: 'Picking' } : s)))
@@ -50,7 +53,7 @@ export function PicklistsPage() {
 
   const columns: QkColumn<Picklist>[] = [
     { key: 'picklistNo', header: 'Picklist', sortable: true, render: (r) => <Link to={`/picklists/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.picklistNo}</Link> },
-    { key: 'soNumber', header: 'SO', sortable: true },
+    { key: 'soNumber', header: 'SO', sortable: true, render: (r) => <Link to={`/sales-orders/${r.soId}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.soNumber}</Link> },
     { key: 'warehouse', header: 'Warehouse' },
     { key: 'items', header: 'Items', align: 'right' },
     { key: 'picked', header: 'Picked', align: 'right' },

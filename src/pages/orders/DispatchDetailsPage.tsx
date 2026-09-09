@@ -53,6 +53,7 @@ export function DispatchDetailsPage() {
         actions={
           <>
             <Link to="/dispatch"><QkButton variant="outline">Queue</QkButton></Link>
+            {order && <Link to={`/sales-orders/${order.id}`}><QkButton variant="outline">View Sales Order</QkButton></Link>}
             {record.status === 'Queued' && <QkButton onClick={() => advance('Verifying')}>Start verification</QkButton>}
             {record.status === 'Verifying' && <QkButton onClick={() => advance('Ready')}>Mark ready</QkButton>}
             {(record.status === 'Ready' || record.status === 'Verifying') && <QkButton onClick={() => advance('Handed Over')}>Confirm handover</QkButton>}

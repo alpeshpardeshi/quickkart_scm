@@ -60,7 +60,9 @@ export function BatchTraceabilityPage() {
       />
       <div style={{ display: 'flex', gap: 8 }}>
         <QkStatusBadge label={batch.status} tone={statusTone(batch.status)} />
-        <span className="qk-muted" style={{ fontSize: 12 }}>FEFO {batch.fefoPriority} · Expiry {formatDate(batch.expiry)}</span>
+        <span className="qk-muted" style={{ fontSize: 12 }}>
+          {Math.ceil((new Date(`${batch.expiry}T00:00:00`).getTime() - new Date('2026-09-09T00:00:00').getTime()) / (1000 * 60 * 60 * 24))} days left · Expiry {formatDate(batch.expiry)}
+        </span>
       </div>
       <div className="qk-grid-metrics">
         <QkMetric label="Qty" value={formatNumber(batch.qty)} />

@@ -28,7 +28,7 @@ export function BatchesPage() {
         if (warehouse && row.warehouse !== warehouse) return false
         return true
       })
-      .sort((a, b) => a.fefoPriority - b.fefoPriority || a.expiry.localeCompare(b.expiry))
+      .sort((a, b) => a.expiry.localeCompare(b.expiry))
   }, [batches, status, warehouse])
 
   const list = useListState(filtered as unknown as Record<string, unknown>[], [
@@ -74,28 +74,32 @@ export function BatchesPage() {
     { key: 'mfgDate', header: 'MFG', sortable: true, render: (r) => formatDate(r.mfgDate) },
     { key: 'expiry', header: 'Expiry', sortable: true, render: (r) => formatDate(r.expiry) },
     {
-      key: 'fefoPriority',
-      header: 'FEFO',
+      key: 'expiry',
+      header: 'Days left',
       align: 'center',
       sortable: true,
-      render: (r) => (
-        <span
-          style={{
-            display: 'inline-flex',
-            width: 22,
-            height: 22,
-            borderRadius: '50%',
-            background: 'var(--qk-primary-soft)',
-            color: 'var(--qk-primary)',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 11,
-            fontWeight: 700,
-          }}
-        >
-          {r.fefoPriority}
-        </span>
-      ),
+      render: (r) => {
+        const days = daysUntil(r.expiry)
+        return (
+          <span
+            style={{
+              display: 'inline-flex',
+              minWidth: 22,
+              height: 22,
+              padding: '0 6px',
+              borderRadius: 999,
+              background: 'var(--qk-primary-soft)',
+              color: 'var(--qk-primary)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 11,
+              fontWeight: 700,
+            }}
+          >
+            {days}
+          </span>
+        )
+      },
     },
     { key: 'status', header: 'Status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
     { key: 'vendor', header: 'Vendor' },
@@ -105,7 +109,7 @@ export function BatchesPage() {
     <div className="qk-page qk-animate-in">
       <PageHeader
         title="Batches"
-        subtitle="FEFO-prioritized batch stock across warehouses."
+        subtitle="Batch stock sorted by earliest expiry across warehouses."
         actions={
           <Link to="/expiry">
             <QkButton variant="outline">Expiry dashboard</QkButton>
@@ -211,7 +215,7 @@ export function BatchesPage() {
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
               <QkStatusBadge label={selected.status} tone={statusTone(selected.status)} />
               <span className="qk-muted" style={{ fontSize: 12 }}>
-                FEFO priority {selected.fefoPriority}
+                {daysUntil(selected.expiry)} days to expiry
               </span>
             </div>
             <DetailGrid
@@ -259,6 +263,12 @@ export function BatchesPage() {
       </QkDrawer>
     </div>
   )
+}
+
+function daysUntil(date: string) {
+  const target = new Date(`${date}T00:00:00`).getTime()
+  const today = new Date('2026-09-09T00:00:00').getTime()
+  return Math.ceil((target - today) / (1000 * 60 * 60 * 24))
 }
 
 function DetailGrid({ rows }: { rows: [string, string][] }) {

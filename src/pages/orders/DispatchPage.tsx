@@ -51,7 +51,11 @@ export function DispatchPage() {
 
   const columns: QkColumn<DispatchRecord>[] = [
     { key: 'dispatchNo', header: 'Dispatch', sortable: true, render: (r) => <Link to={`/dispatch/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.dispatchNo}</Link> },
-    { key: 'soNumber', header: 'SO', sortable: true },
+    { key: 'soNumber', header: 'SO', sortable: true, render: (r) => (
+      r.soId
+        ? <Link to={`/sales-orders/${r.soId}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.soNumber}</Link>
+        : r.soNumber
+    ) },
     { key: 'customer', header: 'Customer', sortable: true },
     { key: 'warehouse', header: 'Warehouse' },
     { key: 'items', header: 'Items', align: 'right' },

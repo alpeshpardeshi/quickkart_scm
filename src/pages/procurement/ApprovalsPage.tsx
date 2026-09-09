@@ -18,7 +18,7 @@ import { formatCurrency, formatDate, statusTone } from '../../utils'
 import type { PurchaseOrder } from '../../types'
 
 export function ApprovalsPage() {
-  const { purchaseOrders, setPurchaseOrders, setApprovalHistory, setZohoSyncHistory } = useData()
+  const { purchaseOrders, svcApprovePo, svcRejectPo } = useData()
   const { pushToast } = useToast()
   const navigate = useNavigate()
   const [vendor, setVendor] = useState('')
@@ -48,42 +48,10 @@ export function ApprovalsPage() {
   const applyAction = () => {
     if (!confirm) return
     const { po, action } = confirm
-    setPurchaseOrders((prev) =>
-      prev.map((p) => {
-        if (p.id !== po.id) return p
-        if (action === 'approve') {
-          return { ...p, status: 'Published', zohoStatus: 'Synced' }
-        }
-        return { ...p, status: 'Cancelled', zohoStatus: 'Not Linked' }
-      }),
-    )
-    setApprovalHistory((prev) => [
-      {
-        id: `ah-${Date.now()}`,
-        poNumber: po.poNumber,
-        poId: po.id,
-        vendor: po.vendor,
-        amount: po.amount,
-        action: action === 'approve' ? 'Approved' : 'Rejected',
-        actedBy: 'Ankit Verma',
-        actedAt: new Date().toISOString(),
-        notes: action === 'approve' ? 'Approved from approval queue' : 'Rejected from approval queue',
-      },
-      ...prev,
-    ])
     if (action === 'approve') {
-      setZohoSyncHistory((prev) => [
-        {
-          id: `zs-${Date.now()}`,
-          poNumber: po.poNumber,
-          direction: 'Push',
-          status: 'Synced',
-          message: 'PO published and synced to Zoho Books',
-          syncedAt: new Date().toISOString(),
-          attempts: 1,
-        },
-        ...prev,
-      ])
+      svcApprovePo(po.id, 'Ankit Verma', 'Approved from approval queue')
+    } else {
+      svcRejectPo(po.id, 'Ankit Verma', 'Rejected from approval queue')
     }
     pushToast({
       tone: action === 'approve' ? 'success' : 'warning',

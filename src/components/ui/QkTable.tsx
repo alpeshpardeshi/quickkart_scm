@@ -172,7 +172,16 @@ export function QkTable<T extends { id: string }>({
                     }}
                     onClick={() => col.sortable && onSort?.(col.key)}
                   >
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        width: '100%',
+                        justifyContent:
+                          col.align === 'right' ? 'flex-end' : col.align === 'center' ? 'center' : 'flex-start',
+                      }}
+                    >
                       {col.header}
                       {col.sortable && (
                         active ? (
@@ -273,7 +282,6 @@ function thStyle(sticky: boolean, width?: number): React.CSSProperties {
     zIndex: 1,
     height: 36,
     padding: '0 12px',
-    textAlign: 'left',
     fontWeight: 550,
     fontSize: 'var(--qk-font-label)',
     color: 'var(--qk-text-secondary)',

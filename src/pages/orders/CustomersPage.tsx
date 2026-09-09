@@ -64,6 +64,9 @@ export function CustomersPage() {
     setErrors(next)
     if (Object.keys(next).length) return
 
+    const customerType: Customer['customerType'] = form.type === 'Retail' ? 'B2C' : 'B2B'
+    const b2bSubtype: Customer['b2bSubtype'] =
+      form.type === 'Wholesale' ? 'WHOLESALE' : form.type === 'Distributor' ? 'DISTRIBUTOR' : undefined
     const payload: Customer = {
       id: editing?.id || uid('c'),
       name: form.name.trim(),
@@ -72,6 +75,8 @@ export function CustomersPage() {
       email: form.email.trim(),
       phone: form.phone.trim(),
       city: form.city.trim() || 'Mumbai',
+      customerType,
+      b2bSubtype,
       type: form.type,
       status: form.status,
       creditLimit: Number(form.creditLimit),

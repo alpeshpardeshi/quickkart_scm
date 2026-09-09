@@ -150,6 +150,7 @@ export function VendorsPage() {
         id: uid('v'),
         name: form.name.trim(),
         code: form.code.trim(),
+        vendorType: 'Supplier',
         contact: form.contact.trim(),
         email: form.email.trim(),
         phone: form.phone.trim(),

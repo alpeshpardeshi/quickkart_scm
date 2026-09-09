@@ -57,6 +57,7 @@ export function ReturnDetailsPage() {
         actions={
           <>
             <Link to="/returns"><QkButton variant="outline">All returns</QkButton></Link>
+            {record.soId && <Link to={`/sales-orders/${record.soId}`}><QkButton variant="outline">View Sales Order</QkButton></Link>}
             {record.status !== 'Closed' && <QkButton onClick={saveQc}>Save QC decision</QkButton>}
           </>
         }

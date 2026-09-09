@@ -19,18 +19,21 @@ export function QkStatusBadge({ label, tone = 'neutral', dot = true }: QkStatusB
   const t = toneStyles[tone]
   return (
     <span
+      title={label}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 6,
-        height: 22,
-        padding: '0 8px',
+        gap: 5,
+        minHeight: 22,
+        maxWidth: '100%',
+        padding: '2px 8px',
         borderRadius: 999,
         background: t.bg,
         color: t.color,
-        fontSize: 11.5,
+        fontSize: 11,
         fontWeight: 500,
-        whiteSpace: 'nowrap',
+        lineHeight: 1.2,
+        boxSizing: 'border-box',
       }}
     >
       {dot && (
@@ -44,7 +47,16 @@ export function QkStatusBadge({ label, tone = 'neutral', dot = true }: QkStatusB
           }}
         />
       )}
-      {label}
+      <span
+        style={{
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          minWidth: 0,
+        }}
+      >
+        {label}
+      </span>
     </span>
   )
 }

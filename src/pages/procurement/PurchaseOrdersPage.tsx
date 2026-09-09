@@ -107,7 +107,7 @@ export function PurchaseOrdersPage() {
       <div className="qk-grid-metrics">
         <QkMetric label="Open POs" value={openCount} />
         <QkMetric label="Pending approval" value={pendingApproval} />
-        <QkMetric label="Receiving" value={purchaseOrders.filter((p) => p.status === 'Receiving').length} />
+        <QkMetric label="Partially received" value={purchaseOrders.filter((p) => p.status === 'Partially Received').length} />
         <QkMetric label="Pipeline value" value={formatCurrency(totalValue)} />
       </div>
 
@@ -124,7 +124,7 @@ export function PurchaseOrdersPage() {
               setStatus(v)
               list.setPage(1)
             },
-            options: ['Draft', 'Pending Approval', 'Published', 'Receiving', 'Closed', 'Cancelled'].map((s) => ({
+            options: ['Draft', 'Pending Approval', 'Published', 'Partially Received', 'Closed', 'Cancelled'].map((s) => ({
               label: s,
               value: s,
             })),

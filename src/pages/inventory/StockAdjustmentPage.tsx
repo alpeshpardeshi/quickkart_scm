@@ -92,18 +92,32 @@ export function StockAdjustmentPage() {
       }),
     )
 
+    const movementId = `MOV-${Date.now().toString(36).toUpperCase()}`
+    const timestamp = new Date().toISOString().slice(0, 19)
+    const isIncrease = delta >= 0
     const movement: StockMovement = {
       id: uid('m'),
+      movementId,
+      timestamp,
+      movementType: isIncrease ? 'ADJUSTMENT_IN' : 'ADJUSTMENT_OUT',
+      type: 'Adjustment',
       sku: selected.sku,
       product: selected.product,
+      productId: selected.productId,
+      batchId: selected.batchId,
       batch: selected.batch,
-      type: 'Adjustment',
-      qty: delta,
+      warehouseId: selected.warehouseId,
+      qty: Math.abs(delta),
       fromLocation: `${selected.zone}-${selected.rack}-${selected.shelf}-${selected.bin}`,
       toLocation: form.adjType === 'decrease' ? 'Adjustment' : `${selected.zone}-${selected.rack}-${selected.shelf}-${selected.bin}`,
+      fromStatus: isIncrease ? '' : 'AVAILABLE',
+      toStatus: isIncrease ? 'AVAILABLE' : '',
+      referenceType: 'ADJUSTMENT',
+      referenceId: form.reference.trim() || movementId,
       reference: form.reference.trim() || `ADJ-${Date.now().toString(36).toUpperCase()}`,
       performedBy: user?.name ?? 'Ankit Verma',
-      performedAt: new Date().toISOString().slice(0, 19),
+      performedAt: timestamp,
+      reason: form.reason.trim(),
     }
 
     setMovements((prev) => [movement, ...prev])

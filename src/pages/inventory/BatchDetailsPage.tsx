@@ -92,7 +92,7 @@ export function BatchDetailsPage() {
           Vendor {batch.vendor}
         </span>
         <span className="qk-muted" style={{ fontSize: 12 }}>
-          FEFO {batch.fefoPriority}
+          {daysUntil(batch.expiry)} days to expiry
         </span>
       </div>
 
@@ -127,7 +127,7 @@ export function BatchDetailsPage() {
                 ['Product', batch.product],
                 ['MFG Date', formatDate(batch.mfgDate)],
                 ['Expiry', formatDate(batch.expiry)],
-                ['FEFO Priority', String(batch.fefoPriority)],
+                ['Days to expiry', String(daysUntil(batch.expiry))],
               ]}
             />
           </section>

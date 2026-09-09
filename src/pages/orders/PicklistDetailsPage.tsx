@@ -44,6 +44,7 @@ export function PicklistDetailsPage() {
         actions={
           <>
             <Link to="/picklists"><QkButton variant="outline">All picklists</QkButton></Link>
+            {order && <Link to={`/sales-orders/${order.id}`}><QkButton variant="outline">View Sales Order</QkButton></Link>}
             {picklist.status === 'Open' && <QkButton onClick={start}>Start picking</QkButton>}
             <Link to="/picking"><QkButton variant={picklist.status === 'Open' ? 'outline' : 'primary'}>Open picking screen</QkButton></Link>
           </>

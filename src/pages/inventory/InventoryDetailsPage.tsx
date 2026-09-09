@@ -35,9 +35,12 @@ export function InventoryDetailsPage() {
     { key: 'qty', header: 'Qty', align: 'right' },
     { key: 'mfgDate', header: 'MFG Date', render: (r) => formatDate(r.mfgDate) },
     { key: 'expiry', header: 'Expiry', render: (r) => formatDate(r.expiry) },
-    { key: 'fefoPriority', header: 'FEFO Priority', align: 'center', render: (r) => (
-      <span style={{ display: 'inline-flex', width: 22, height: 22, borderRadius: '50%', background: 'var(--qk-primary-soft)', color: 'var(--qk-primary)', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>{r.fefoPriority}</span>
-    ) },
+    { key: 'expiry', header: 'Days left', align: 'center', render: (r) => {
+      const days = Math.ceil((new Date(`${r.expiry}T00:00:00`).getTime() - new Date('2026-09-09T00:00:00').getTime()) / (1000 * 60 * 60 * 24))
+      return (
+        <span style={{ display: 'inline-flex', minWidth: 22, height: 22, padding: '0 6px', borderRadius: 999, background: 'var(--qk-primary-soft)', color: 'var(--qk-primary)', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>{days}</span>
+      )
+    } },
     { key: 'status', header: 'Status', render: (r) => <QkStatusBadge label={r.status} tone={statusTone(r.status)} /> },
   ]
 

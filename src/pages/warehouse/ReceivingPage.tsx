@@ -26,7 +26,7 @@ export function ReceivingPage() {
   const filtered = useMemo(() => receiving.filter((r) => !status || r.status === status), [receiving, status])
   const list = useListState(filtered as unknown as Record<string, unknown>[], ['grnNumber', 'poNumber', 'vendor', 'warehouse'] as never)
 
-  const openPos = purchaseOrders.filter((p) => p.status === 'Published' || p.status === 'Receiving')
+  const openPos = purchaseOrders.filter((p) => p.status === 'Published' || p.status === 'Partially Received')
 
   const startReceiving = (e: FormEvent) => {
     e.preventDefault()
@@ -38,19 +38,27 @@ export function ReceivingPage() {
     if (Object.keys(next).length) return
 
     const po = purchaseOrders.find((p) => p.poNumber === poNumber)
+    const wh = warehouses.find((w) => w.name === warehouse || w.id === warehouse)
+    const now = new Date().toISOString()
     const record: ReceivingRecord = {
       id: uid('r'),
+      receivingNumber: `RCV-${8000 + receiving.length + 1}`,
       grnNumber: `GRN-${8000 + receiving.length + 1}`,
+      poId: po?.id || '',
       poNumber,
+      vendorId: po?.vendorId || '',
       vendor: po?.vendor || '—',
-      warehouse,
+      warehouseId: wh?.id || po?.warehouseId || '',
+      warehouse: wh?.name || warehouse,
+      receiptAt: now,
       expectedQty: Number(expectedQty),
       receivedQty: 0,
       acceptedQty: 0,
       rejectedQty: 0,
       status: 'In Progress',
-      receivedAt: new Date().toISOString(),
+      receivedAt: now,
       receivedBy: 'Suresh Yadav',
+      lines: [],
     }
     setReceiving((prev) => [record, ...prev])
     pushToast({ tone: 'success', title: 'Receiving started', message: `${record.grnNumber} created for ${poNumber}` })

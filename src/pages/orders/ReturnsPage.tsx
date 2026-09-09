@@ -45,8 +45,12 @@ export function ReturnsPage() {
     const record: ReturnRecord = {
       id: uid('rt'),
       returnNo: `RTN-${300 + returns.length + 1}`,
+      soId: so.id,
       soNumber,
+      customerId: so.customerId,
       customer: so.customer,
+      warehouseId: so.warehouseId,
+      warehouse: so.warehouse,
       sku: item.sku,
       product: item.product,
       batch: item.batch || '—',
@@ -58,6 +62,7 @@ export function ReturnsPage() {
       status: 'Open',
       reason: reason.trim(),
       createdAt: '2026-09-09',
+      lines: [],
     }
     setReturns((prev) => [record, ...prev])
     pushToast({ tone: 'success', title: 'Return created', message: record.returnNo })
@@ -93,7 +98,11 @@ export function ReturnsPage() {
 
   const columns: QkColumn<ReturnRecord>[] = [
     { key: 'returnNo', header: 'Return', sortable: true, render: (r) => <Link to={`/returns/${r.id}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.returnNo}</Link> },
-    { key: 'soNumber', header: 'SO' },
+    { key: 'soNumber', header: 'SO', render: (r) => (
+      r.soId
+        ? <Link to={`/sales-orders/${r.soId}`} style={{ color: 'var(--qk-primary)', fontWeight: 600 }}>{r.soNumber}</Link>
+        : r.soNumber
+    ) },
     { key: 'customer', header: 'Customer', sortable: true },
     { key: 'sku', header: 'SKU' },
     { key: 'product', header: 'Product' },

@@ -1,19 +1,18 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { PageHeader } from '../../components/layout/PageHeader'
-import { QkButton, QkInput, QkMetric, QkSelect, QkStatusBadge } from '../../components/ui'
+import { QkButton, QkMetric, QkSelect, QkStatusBadge } from '../../components/ui'
 import { useData } from '../../context/DataContext'
 import { useToast } from '../../context/ToastContext'
 import { formatNumber, statusTone } from '../../utils'
 
-const BINS = ['A-R12-S3-B04', 'A-R14-S2-B08', 'B-R04-S1-B12', 'C-R08-S2-B07', 'E-R01-S1-B03', 'F-R03-S1-B02']
-
 export function PutAwayDetailsPage() {
   const { id } = useParams()
-  const { putAwayTasks, setPutAwayTasks } = useData()
+  const { putAwayTasks, bins, svcConfirmPutAway } = useData()
   const { pushToast } = useToast()
   const task = putAwayTasks.find((t) => t.id === id)
-  const [destination, setDestination] = useState(task?.destinationBin || task?.suggestedLocation || '')
+  const warehouseBins = bins.filter((b) => b.warehouseId === task?.warehouseId && b.status === 'Available')
+  const [destination, setDestination] = useState(task?.destinationBinId || task?.suggestedBinId || '')
   const [saving, setSaving] = useState(false)
 
   if (!task) {
@@ -27,14 +26,19 @@ export function PutAwayDetailsPage() {
 
   const confirm = async () => {
     if (!destination.trim()) {
-      pushToast({ tone: 'warning', title: 'Destination required', message: 'Select or enter a bin' })
+      pushToast({ tone: 'warning', title: 'Destination required', message: 'Select a bin' })
       return
     }
     setSaving(true)
-    await new Promise((r) => setTimeout(r, 400))
-    setPutAwayTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, destinationBin: destination, status: 'Completed' } : t)))
-    setSaving(false)
-    pushToast({ tone: 'success', title: 'Put-away confirmed', message: `${task.sku} → ${destination}` })
+    await new Promise((r) => setTimeout(r, 300))
+    try {
+      svcConfirmPutAway({ taskId: task.id, binId: destination, performedBy: 'Ankit Verma' })
+      pushToast({ tone: 'success', title: 'Put-away confirmed', message: `${task.sku} moved to AVAILABLE` })
+    } catch (err) {
+      pushToast({ tone: 'danger', title: 'Put-away failed', message: err instanceof Error ? err.message : 'Unable to confirm' })
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -61,12 +65,16 @@ export function PutAwayDetailsPage() {
           <div style={{ padding: 14, borderRadius: 6, background: 'var(--qk-primary-soft)', color: 'var(--qk-primary)', fontWeight: 650, fontSize: 18 }}>
             {task.suggestedLocation}
           </div>
-          <div style={{ marginTop: 12, fontSize: 13 }} className="qk-secondary">System FEFO / slotting recommendation</div>
+          <div style={{ marginTop: 12, fontSize: 13 }} className="qk-secondary">Suggested storage bin from warehouse hierarchy</div>
         </section>
         <section className="qk-surface" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <h3 className="qk-section-title">Destination bin</h3>
-          <QkSelect label="Select bin" value={destination} options={BINS.map((b) => ({ label: b, value: b }))} onChange={(e) => setDestination(e.target.value)} />
-          <QkInput label="Or enter manually" value={destination} onChange={(e) => setDestination(e.target.value)} />
+          <QkSelect
+            label="Select bin"
+            value={destination}
+            options={warehouseBins.map((b) => ({ label: `${b.code} (${b.binType})`, value: b.id }))}
+            onChange={(e) => setDestination(e.target.value)}
+          />
         </section>
       </div>
     </div>

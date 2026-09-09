@@ -27,7 +27,7 @@ export function PurchaseOrderFormPage() {
   const navigate = useNavigate()
   const {
     purchaseOrders, setPurchaseOrders, vendors, warehouses, products, inventory,
-    setApprovalHistory, setZohoSyncHistory,
+    setZohoSyncHistory, svcSubmitPo,
   } = useData()
   const { pushToast } = useToast()
   const existing = purchaseOrders.find((p) => p.id === id)
@@ -216,26 +216,28 @@ export function PurchaseOrderFormPage() {
       const product = products.find((p) => p.sku === l.sku)!
       const orderedQty = Number(l.qty)
       const unitPrice = Number(l.unitPrice)
+      const existingItem = existing?.items.find((i) => i.sku === l.sku)
       return {
-        id: uid('poi'),
+        id: existingItem?.id || uid('poi'),
         sku: product.sku,
+        productId: product.id,
         product: product.name,
+        uom: product.uom,
         orderedQty,
-        receivedQty: existing?.items.find((i) => i.sku === l.sku)?.receivedQty || 0,
+        receivedQty: existingItem?.receivedQty || 0,
+        acceptedQty: existingItem?.acceptedQty || 0,
+        rejectedQty: existingItem?.rejectedQty || 0,
         pendingQty: orderedQty,
         unitPrice,
         total: orderedQty * unitPrice,
-        status: 'Pending',
+        status: 'Pending' as const,
       }
     })
 
-    const nextStatus: PurchaseOrder['status'] = submitForApproval ? 'Pending Approval' : 'Draft'
     setSaving(true)
     await new Promise((r) => setTimeout(r, 450))
 
     if (isEdit && existing) {
-      const editStatus: PurchaseOrder['status'] =
-        existing.status === 'Draft' || existing.status === 'Pending Approval' ? nextStatus : existing.status
       const updated: PurchaseOrder = {
         ...existing,
         vendorId: v.id,
@@ -243,25 +245,19 @@ export function PurchaseOrderFormPage() {
         warehouseId: w.id,
         warehouse: w.name,
         expectedDelivery,
-        status: editStatus,
         amount: totals,
+        subtotal: totals,
+        discountTotal: existing.discountTotal ?? 0,
+        taxTotal: existing.taxTotal ?? 0,
+        freight: existing.freight ?? 0,
+        otherCharges: existing.otherCharges ?? 0,
         itemCount: items.length,
         items,
-        zohoStatus: submitForApproval ? 'Pending' : existing.zohoStatus,
+        updatedAt: new Date().toISOString(),
       }
       setPurchaseOrders((prev) => prev.map((p) => (p.id === existing.id ? updated : p)))
-      if (submitForApproval) {
-        setApprovalHistory((prev) => [{
-          id: uid('ah'),
-          poNumber: existing.poNumber,
-          poId: existing.id,
-          vendor: v.name,
-          amount: totals,
-          action: 'Submitted',
-          actedBy: 'Neha Kulkarni',
-          actedAt: new Date().toISOString(),
-          notes: 'Submitted for approval from edit form',
-        }, ...prev])
+      if (submitForApproval && (existing.status === 'Draft' || existing.status === 'Pending Approval')) {
+        svcSubmitPo(existing.id, 'Neha Kulkarni')
       }
       pushToast({ tone: 'success', title: 'PO updated', message: existing.poNumber })
       setSaving(false)
@@ -271,38 +267,38 @@ export function PurchaseOrderFormPage() {
 
     const poNumber = `PO-${10236 + purchaseOrders.length}`
     const newId = uid('po')
-    setPurchaseOrders((prev) => [{
+    const draft: PurchaseOrder = {
       id: newId,
       poNumber,
       vendorId: v.id,
       vendor: v.name,
       warehouseId: w.id,
       warehouse: w.name,
+      orderDate: '2026-09-09',
       expectedDelivery,
-      status: nextStatus,
+      status: 'Draft',
+      currency: 'INR',
+      priority: 'Medium',
       amount: totals,
+      subtotal: totals,
+      discountTotal: 0,
+      taxTotal: 0,
+      freight: 0,
+      otherCharges: 0,
       itemCount: items.length,
       createdAt: '2026-09-09',
       createdBy: 'Neha Kulkarni',
       items,
-      zohoStatus: 'Not Linked',
-    }, ...prev])
+      zohoStatus: 'Not Synced',
+    }
+    setPurchaseOrders((prev) => [draft, ...prev])
 
     if (submitForApproval) {
-      setApprovalHistory((prev) => [{
-        id: uid('ah'),
-        poNumber,
-        poId: newId,
-        vendor: v.name,
-        amount: totals,
-        action: 'Submitted',
-        actedBy: 'Neha Kulkarni',
-        actedAt: new Date().toISOString(),
-        notes: 'Submitted for approval',
-      }, ...prev])
+      svcSubmitPo(newId, 'Neha Kulkarni')
       setZohoSyncHistory((prev) => [{
         id: uid('zs'),
         poNumber,
+        poId: newId,
         direction: 'Push',
         status: 'Pending',
         message: 'Awaiting approval before Zoho sync',

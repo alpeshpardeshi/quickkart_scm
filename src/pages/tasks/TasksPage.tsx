@@ -49,12 +49,13 @@ export function TasksPage() {
     if (Object.keys(next).length) return
     const task: Task = {
       id: uid('t'),
+      taskNumber: `TSK-${9000 + tasks.length + 1}`,
       title: title.trim(),
       type,
       warehouse,
       location: 'General',
       priority,
-      status: 'Open',
+      status: 'Pending',
       due,
       assignedTo,
       createdBy: user?.name || 'System',
@@ -101,16 +102,16 @@ export function TasksPage() {
         }
       />
       <div className="qk-grid-metrics">
-        <QkMetric label="Open" value={tasks.filter((t) => t.status === 'Open').length} />
+        <QkMetric label="Pending" value={tasks.filter((t) => t.status === 'Pending').length} />
         <QkMetric label="In progress" value={tasks.filter((t) => t.status === 'In Progress').length} />
-        <QkMetric label="Blocked" value={tasks.filter((t) => t.status === 'Blocked').length} />
+        <QkMetric label="On hold" value={tasks.filter((t) => t.status === 'On Hold').length} />
         <QkMetric label="Completed" value={tasks.filter((t) => t.status === 'Completed').length} />
       </div>
       <QkFilterBar
         search={list.search}
         onSearchChange={list.setSearch}
         searchPlaceholder="Search task, type, assignee..."
-        filters={[{ id: 'status', label: 'Status', value: status, onChange: setStatus, options: ['Open', 'In Progress', 'Blocked', 'Completed', 'Cancelled'].map((s) => ({ label: s, value: s })) }]}
+        filters={[{ id: 'status', label: 'Status', value: status, onChange: setStatus, options: ['Pending', 'Assigned', 'In Progress', 'On Hold', 'Completed', 'Cancelled'].map((s) => ({ label: s, value: s })) }]}
         chips={chips}
         onRemoveChip={(id) => { if (id === 'status') setStatus(''); if (id === 'mine') setMine(false) }}
         onClearAll={() => { setStatus(''); setMine(false); list.setSearch('') }}
@@ -138,8 +139,8 @@ export function TasksPage() {
           selected ? (
             <>
               <QkButton variant="outline" onClick={() => setSelected(null)}>Close</QkButton>
-              {selected.status === 'Open' && <QkButton onClick={() => setTaskStatus(selected, 'In Progress')}>Start</QkButton>}
-              {selected.status === 'In Progress' && <QkButton variant="outline" onClick={() => setTaskStatus(selected, 'Blocked')}>Raise concern</QkButton>}
+              {selected.status === 'Pending' && <QkButton onClick={() => setTaskStatus(selected, 'In Progress')}>Start</QkButton>}
+              {selected.status === 'In Progress' && <QkButton variant="outline" onClick={() => setTaskStatus(selected, 'On Hold')}>Raise concern</QkButton>}
               {selected.status !== 'Completed' && <QkButton onClick={() => setTaskStatus(selected, 'Completed')}>Complete</QkButton>}
             </>
           ) : null

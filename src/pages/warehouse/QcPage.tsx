@@ -11,7 +11,7 @@ import { formatDateTime, formatNumber, statusTone } from '../../utils'
 import type { QcInspection } from '../../types'
 
 export function QcPage() {
-  const { qcInspections, setQcInspections } = useData()
+  const { qcInspections, svcPerformQc } = useData()
   const { pushToast } = useToast()
   const [tab, setTab] = useState('queue')
   const [status, setStatus] = useState('')
@@ -25,7 +25,7 @@ export function QcPage() {
   const base = useMemo(() => {
     if (tab === 'queue') return qcInspections.filter((q) => q.status === 'Pending' || q.status === 'In Progress')
     if (tab === 'rtv') return qcInspections.filter((q) => q.status === 'RTV' || q.status === 'Failed')
-    return qcInspections.filter((q) => q.status === 'Passed' || q.status === 'Failed' || q.status === 'RTV')
+    return qcInspections.filter((q) => q.status === 'Passed' || q.status === 'Failed' || q.status === 'RTV' || q.status === 'Partial')
   }, [qcInspections, tab])
 
   const filtered = useMemo(() => base.filter((q) => !status || q.status === status), [base, status])
@@ -53,26 +53,23 @@ export function QcPage() {
     if (Object.keys(next).length) return
 
     setSaving(true)
-    await new Promise((r) => setTimeout(r, 500))
-    const newStatus: QcInspection['status'] = rej === 0 ? 'Passed' : rej === selected.receivedQty ? 'RTV' : 'Failed'
-    setQcInspections((prev) =>
-      prev.map((q) =>
-        q.id === selected.id
-          ? {
-              ...q,
-              acceptedQty: acc,
-              rejectedQty: rej,
-              reason: reason.trim(),
-              status: newStatus,
-              inspector: 'Vikram Singh',
-              inspectedAt: new Date().toISOString(),
-            }
-          : q,
-      ),
-    )
-    setSaving(false)
-    setSelected(null)
-    pushToast({ tone: 'success', title: 'Inspection submitted', message: `${selected.reference} marked ${newStatus}` })
+    await new Promise((r) => setTimeout(r, 300))
+    try {
+      svcPerformQc({
+        qcId: selected.id,
+        acceptedQty: acc,
+        rejectedQty: rej,
+        inspector: 'Vikram Singh',
+        reason: reason.trim(),
+        rejectionDisposition: rej > 0 ? (rej === selected.receivedQty ? 'RTV' : 'DAMAGED') : undefined,
+      })
+      pushToast({ tone: 'success', title: 'Inspection submitted', message: `${selected.qcNumber || selected.reference} updated — inventory moved` })
+      setSelected(null)
+    } catch (err) {
+      pushToast({ tone: 'danger', title: 'QC failed', message: err instanceof Error ? err.message : 'Unable to complete QC' })
+    } finally {
+      setSaving(false)
+    }
   }
 
   const columns: QkColumn<QcInspection>[] = [
